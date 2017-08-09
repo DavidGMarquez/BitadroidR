@@ -14,6 +14,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.Parcelable;
+import android.os.PowerManager;
 import android.os.RemoteException;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -65,6 +66,7 @@ public class BitalinoCommunicationService extends Service {
     private BITalinoDescription bitaDesc;
     private BITalinoState bitaState;
     private Notification serviceNotification=null;
+    private PowerManager.WakeLock wakeLock=null;
 
 
 
@@ -77,6 +79,10 @@ public class BitalinoCommunicationService extends Service {
     public int onStartCommand(Intent intent, int flags,int startID){
         initializeBitalinoAPI();
         registerReceiver(updateReceiver,updateIntentFilter());
+        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                "MyWakelockTag");
+        wakeLock.acquire();
         return START_NOT_STICKY;
     }
 
@@ -119,8 +125,7 @@ public class BitalinoCommunicationService extends Service {
                 if (isConnected) {
                     stopConnection();
                 }
-
-
+        wakeLock.release();
     }
 
 

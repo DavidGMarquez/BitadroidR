@@ -24,6 +24,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -75,6 +76,7 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
     ChannelConfiguration mConfiguration;
     private int dataCheckCount=0;
     boolean mBound;
+    boolean isVisible;
     boolean isConnected=false;
     private final Messenger activityMessenger = new Messenger(new ShowSingleDataActivity.IncomingHandler());
     Messenger mService = null;
@@ -89,6 +91,7 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_single_data);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         if(!getIntent().hasExtra("Device")||!getIntent().hasExtra("Config")){
             Toast.makeText(this, "No device or config,", Toast.LENGTH_SHORT).show();
             finish();
@@ -159,7 +162,19 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
                 Context.BIND_AUTO_CREATE);
         if(!isConnected){
             progressDialogConnecting.show();
+
         }
+    }
+    @Override
+    protected void onResume(){
+        super.onResume();
+        isVisible=true;
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        isVisible=false;
     }
     @Override
     protected void onStop() {
@@ -246,26 +261,28 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
         int position=mConfiguration.activeChannels[0];
         if (samplingCounter++ >= samplingFrames) {
             timeCounter++;
-            xValue = (float)timeCounter / xValueRatio
+            xValue = (float) timeCounter / xValueRatio
                     * mConfiguration.getVisualizationRate();
-           /** if(mSignalFilter.checkFrame(frame.getAnalog(position))) {
-                 f = frame.getAnalog(position);
-            }else{
-                 f=mSignalFilter.getAvg();
-            }**/
-           f=frame.getAnalog(position);
-            if(mSignalFilter.checkFrame(f)) {
-                sumForAvg += f;
-                Entry entry = new Entry(xValue, f);
-                mpAndroidGraph.addEntry(entry);
-                mSignalFilter.updateValues(sumForAvg);
-            }
+            /** if(mSignalFilter.checkFrame(frame.getAnalog(position))) {
+             f = frame.getAnalog(position);
+             }else{
+             f=mSignalFilter.getAvg();
+             }**/
+            f = frame.getAnalog(position);
+            if (isVisible) {
+                if (mSignalFilter.checkFrame(f)) {
+                    sumForAvg += f;
+                    Entry entry = new Entry(xValue, f);
+                    mpAndroidGraph.addEntry(entry);
+                    mSignalFilter.updateValues(sumForAvg);
+                }
 
-            samplingCounter -= samplingFrames;
-            if(dataCheckCount>=mConfiguration.getVisualizationRate()/2){
-                updateStatistics();
-                dataCheckCount=0;
+                samplingCounter -= samplingFrames;
+                if (dataCheckCount >= mConfiguration.getVisualizationRate() / 2) {
+                    updateStatistics();
+                    dataCheckCount = 0;
 
+                }
             }
         }
 

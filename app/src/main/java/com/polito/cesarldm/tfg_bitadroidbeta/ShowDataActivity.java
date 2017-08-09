@@ -25,6 +25,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -64,6 +65,7 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
     BluetoothDevice device;
     ChannelConfiguration mConfiguration;
     boolean mBound;
+    boolean isVisible;
     boolean isConnected=false;
     private final Messenger activityMessenger = new Messenger(new IncomingHandler());
     Messenger mService = null;
@@ -77,6 +79,7 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_data);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         if(!getIntent().hasExtra("Device")||!getIntent().hasExtra("Config")){
            Toast.makeText(this, "No device or config,", Toast.LENGTH_SHORT).show();
             finish();
@@ -140,13 +143,20 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
             progressDialogConnecting.show();
         }
     }
+    @Override
+    protected void onResume(){
+        super.onResume();
+        isVisible=true;
+    }
 
     @Override
     protected void onStop() {
         super.onStop();
-
-
-
+    }
+    @Override
+    protected void onPause(){
+        super.onPause();
+        isVisible=false;
     }
     @Override
     protected  void onDestroy(){
@@ -218,14 +228,16 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
             xValue = (float)timeCounter / 100
                     * 1000;
             // gets default share preferences with multi-process flag
-            for (int i = 0; i < graphs.size(); i++) {
-                if(isViewVisible(graphs.get(i).getGraphView())) {
-                    float f = frame.getAnalog(mConfiguration.activeChannels[i]);
-                    //float f=(float)frame.getAnalog(mConfiguration.activeChannels[i]);
-                    Entry entry = new Entry(xValue*10, f);
-                    graphs.get(i).addEntry(entry);
-                }
+            if(isVisible) {
+                for (int i = 0; i < graphs.size(); i++) {
+                    if (isViewVisible(graphs.get(i).getGraphView())) {
+                        float f = frame.getAnalog(mConfiguration.activeChannels[i]);
+                        //float f=(float)frame.getAnalog(mConfiguration.activeChannels[i]);
+                        Entry entry = new Entry(xValue * 10, f);
+                        graphs.get(i).addEntry(entry);
+                    }
 
+                }
             }
             samplingCounter -= samplingFrames;
 
