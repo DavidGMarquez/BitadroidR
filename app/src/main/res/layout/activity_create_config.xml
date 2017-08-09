@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.polito.cesarldm.tfg_bitadroidbeta.CreateConfigActivity">
+
+    <Switch
+        android:id="@+id/switch1"
+        android:layout_width="123dp"
+        android:layout_height="29dp"
+        android:padding="4dp"
+        android:text="EMG"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="8dp"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"
+        app:layout_constraintVertical_bias="0.165"
+        app:layout_constraintHorizontal_bias="0.032" />
+
+    <Switch
+        android:id="@+id/switch2"
+        android:layout_width="123dp"
+        android:layout_height="29dp"
+        android:padding="4dp"
+        android:text="ECG"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="8dp"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"
+        app:layout_constraintHorizontal_bias="0.032"
+        app:layout_constraintVertical_bias="0.242" />
+
+    <Switch
+        android:id="@+id/switch3"
+        android:layout_width="123dp"
+        android:layout_height="29dp"
+        android:padding="4dp"
+        android:text="EDA"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="8dp"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"
+        app:layout_constraintHorizontal_bias="0.032"
+        app:layout_constraintVertical_bias="0.319" />
+
+    <Switch
+        android:id="@+id/switch4"
+        android:layout_width="123dp"
+        android:layout_height="29dp"
+        android:padding="4dp"
+        android:text="EEG"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="8dp"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"
+        app:layout_constraintHorizontal_bias="0.032"
+        app:layout_constraintVertical_bias="0.399" />
+
+    <Switch
+        android:id="@+id/switch5"
+        android:layout_width="123dp"
+        android:layout_height="29dp"
+        android:padding="4dp"
+        android:text="ACC"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="8dp"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"
+        app:layout_constraintHorizontal_bias="0.032"
+        app:layout_constraintVertical_bias="0.487" />
+
+    <Switch
+        android:id="@+id/switch6"
+        android:layout_width="123dp"
+        android:layout_height="29dp"
+        android:padding="4dp"
+        android:text="LUX"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="8dp"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"
+        app:layout_constraintHorizontal_bias="0.032"
+        app:layout_constraintVertical_bias="0.568" />
+
+    <EditText
+        android:id="@+id/et_CC_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="Name"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintHorizontal_bias="0.052"
+        app:layout_constraintVertical_bias="0.055" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Configuration name:"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="212dp"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintHorizontal_bias="0.032"
+        app:layout_constraintVertical_bias="0.029" />
+
+    <Button
+        android:id="@+id/btn_CC_done"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Done"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="8dp"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintVertical_bias="0.982" />
+
+    <RadioGroup
+        android:id="@+id/rg_CC"
+        android:layout_width="149dp"
+        android:layout_height="171dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.963"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.327">
+
+        <RadioButton
+            android:id="@+id/radioButton1"
+            android:layout_width="111dp"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="1 Hz" />
+
+        <RadioButton
+            android:id="@+id/radioButton10"
+            android:layout_width="111dp"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="10 Hz" />
+
+        <RadioButton
+            android:id="@+id/radioButton100"
+            android:layout_width="109dp"
+            android:layout_height="wrap_content"
+            android:text="100 Hz" />
+
+        <RadioButton
+            android:id="@+id/radioButton1000"
+            android:layout_width="112dp"
+            android:layout_height="wrap_content"
+            android:text="1000 Hz" />
+    </RadioGroup>
+</android.support.constraint.ConstraintLayout>
