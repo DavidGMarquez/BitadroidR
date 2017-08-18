@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="channels_array">
+        <item>EMG</item>
+        <item>ECG</item>
+        <item>EDA</item>
+        <item>EEG</item>
+        <item>ACC</item>
+        <item>LUX</item>
+    </string-array>
+</resources>

@@ -8,10 +8,9 @@
 
     <Switch
         android:id="@+id/switch1"
-        android:layout_width="123dp"
-        android:layout_height="29dp"
+        android:layout_width="59dp"
+        android:layout_height="32dp"
         android:padding="4dp"
-        android:text="EMG"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginBottom="8dp"
         android:layout_marginRight="8dp"
@@ -20,15 +19,16 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="8dp"
-        app:layout_constraintVertical_bias="0.165"
-        app:layout_constraintHorizontal_bias="0.032" />
+        app:layout_constraintVertical_bias="0.285"
+        app:layout_constraintHorizontal_bias="0.546"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp" />
 
     <Switch
         android:id="@+id/switch2"
-        android:layout_width="123dp"
-        android:layout_height="29dp"
+        android:layout_width="59dp"
+        android:layout_height="32dp"
         android:padding="4dp"
-        android:text="ECG"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginBottom="8dp"
         android:layout_marginRight="8dp"
@@ -37,15 +37,16 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="8dp"
-        app:layout_constraintHorizontal_bias="0.032"
-        app:layout_constraintVertical_bias="0.242" />
+        app:layout_constraintHorizontal_bias="0.546"
+        app:layout_constraintVertical_bias="0.369"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp" />
 
     <Switch
         android:id="@+id/switch3"
-        android:layout_width="123dp"
-        android:layout_height="29dp"
+        android:layout_width="59dp"
+        android:layout_height="32dp"
         android:padding="4dp"
-        android:text="EDA"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginBottom="8dp"
         android:layout_marginRight="8dp"
@@ -54,15 +55,16 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="8dp"
-        app:layout_constraintHorizontal_bias="0.032"
-        app:layout_constraintVertical_bias="0.319" />
+        app:layout_constraintHorizontal_bias="0.546"
+        app:layout_constraintVertical_bias="0.46"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp" />
 
     <Switch
         android:id="@+id/switch4"
-        android:layout_width="123dp"
-        android:layout_height="29dp"
+        android:layout_width="59dp"
+        android:layout_height="32dp"
         android:padding="4dp"
-        android:text="EEG"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginBottom="8dp"
         android:layout_marginRight="8dp"
@@ -71,15 +73,16 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="8dp"
-        app:layout_constraintHorizontal_bias="0.032"
-        app:layout_constraintVertical_bias="0.399" />
+        app:layout_constraintHorizontal_bias="0.546"
+        app:layout_constraintVertical_bias="0.548"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp" />
 
     <Switch
         android:id="@+id/switch5"
-        android:layout_width="123dp"
-        android:layout_height="29dp"
+        android:layout_width="59dp"
+        android:layout_height="32dp"
         android:padding="4dp"
-        android:text="ACC"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginBottom="8dp"
         android:layout_marginRight="8dp"
@@ -88,15 +91,16 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="8dp"
-        app:layout_constraintHorizontal_bias="0.032"
-        app:layout_constraintVertical_bias="0.487" />
+        app:layout_constraintHorizontal_bias="0.546"
+        app:layout_constraintVertical_bias="0.641"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp" />
 
     <Switch
         android:id="@+id/switch6"
-        android:layout_width="123dp"
-        android:layout_height="29dp"
+        android:layout_width="59dp"
+        android:layout_height="32dp"
         android:padding="4dp"
-        android:text="LUX"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginBottom="8dp"
         android:layout_marginRight="8dp"
@@ -105,42 +109,117 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="8dp"
-        app:layout_constraintHorizontal_bias="0.032"
-        app:layout_constraintVertical_bias="0.568" />
-
-    <EditText
-        android:id="@+id/et_CC_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textPersonName"
-        android:text="Name"
+        app:layout_constraintHorizontal_bias="0.546"
+        app:layout_constraintVertical_bias="0.727"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp" />
+    <Switch
+        android:id="@+id/switch21"
+        android:layout_width="59dp"
+        android:layout_height="32dp"
+        android:padding="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginBottom="8dp"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="8dp"
         android:layout_marginRight="8dp"
         app:layout_constraintRight_toRightOf="parent"
         android:layout_marginLeft="8dp"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintHorizontal_bias="0.052"
-        app:layout_constraintVertical_bias="0.055" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"
+        app:layout_constraintVertical_bias="0.285"
+        app:layout_constraintHorizontal_bias="0.828"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp" />
 
-    <TextView
-        android:id="@+id/textView3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Configuration name:"
+    <Switch
+        android:id="@+id/switch22"
+        android:layout_width="59dp"
+        android:layout_height="32dp"
+        android:padding="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginBottom="212dp"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
         android:layout_marginRight="8dp"
         app:layout_constraintRight_toRightOf="parent"
         android:layout_marginLeft="8dp"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintHorizontal_bias="0.032"
-        app:layout_constraintVertical_bias="0.029" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"
+        app:layout_constraintHorizontal_bias="0.828"
+        app:layout_constraintVertical_bias="0.369"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp" />
+
+    <Switch
+        android:id="@+id/switch23"
+        android:layout_width="59dp"
+        android:layout_height="32dp"
+        android:padding="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="8dp"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"
+        app:layout_constraintHorizontal_bias="0.828"
+        app:layout_constraintVertical_bias="0.46"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp" />
+
+    <Switch
+        android:id="@+id/switch24"
+        android:layout_width="59dp"
+        android:layout_height="32dp"
+        android:padding="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="8dp"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"
+        app:layout_constraintHorizontal_bias="0.828"
+        app:layout_constraintVertical_bias="0.548"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp" />
+
+    <Switch
+        android:id="@+id/switch25"
+        android:layout_width="59dp"
+        android:layout_height="32dp"
+        android:padding="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="8dp"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"
+        app:layout_constraintHorizontal_bias="0.828"
+        app:layout_constraintVertical_bias="0.641"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp" />
+
+    <Switch
+        android:id="@+id/switch26"
+        android:layout_width="59dp"
+        android:layout_height="32dp"
+        android:padding="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="8dp"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"
+        app:layout_constraintHorizontal_bias="0.828"
+        app:layout_constraintVertical_bias="0.727"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp" />
 
     <Button
         android:id="@+id/btn_CC_done"
@@ -155,47 +234,220 @@
         app:layout_constraintRight_toRightOf="parent"
         android:layout_marginLeft="8dp"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintVertical_bias="0.982" />
+        app:layout_constraintVertical_bias="0.982"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp" />
+
+    <TextView
+        android:id="@+id/tv_record"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Record"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintHorizontal_bias="0.523"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/switch1"
+        app:layout_constraintVertical_bias="1.0"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp" />
+    <TextView
+        android:id="@+id/tv_show"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Show"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintHorizontal_bias="0.768"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/switch21"
+        app:layout_constraintVertical_bias="1.0"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp" />
+
+    <Spinner
+        android:id="@+id/spinner1"
+        android:layout_width="96dp"
+        android:layout_height="35dp"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="42dp"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/switch1"
+        android:layout_marginRight="8dp"
+        app:layout_constraintHorizontal_bias="0.4"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/spinner2"
+        app:layout_constraintVertical_bias="0.98" />
+    <Spinner
+        android:id="@+id/spinner2"
+        android:layout_width="96dp"
+        android:layout_height="32dp"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="73dp"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/switch1"
+        android:layout_marginRight="8dp"
+        app:layout_constraintHorizontal_bias="0.4"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/spinner3"
+        app:layout_constraintVertical_bias="0.946" />
+    <Spinner
+        android:id="@+id/spinner3"
+        android:layout_width="96dp"
+        android:layout_height="32dp"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="115dp"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/switch1"
+        android:layout_marginRight="8dp"
+        app:layout_constraintHorizontal_bias="0.4"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/spinner4"
+        app:layout_constraintVertical_bias="0.963" />
+    <Spinner
+        android:id="@+id/spinner4"
+        android:layout_width="96dp"
+        android:layout_height="32dp"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="156dp"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/switch1"
+        android:layout_marginRight="8dp"
+        app:layout_constraintHorizontal_bias="0.4"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/spinner5"
+        app:layout_constraintVertical_bias="0.972" />
+    <Spinner
+        android:id="@+id/spinner5"
+        android:layout_width="96dp"
+        android:layout_height="32dp"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="199dp"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/switch1"
+        android:layout_marginRight="8dp"
+        app:layout_constraintHorizontal_bias="0.4"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/spinner6"
+        app:layout_constraintVertical_bias="1.0" />
+    <Spinner
+        android:id="@+id/spinner6"
+        android:layout_width="96dp"
+        android:layout_height="32dp"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="239dp"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/switch1"
+        android:layout_marginRight="8dp"
+        app:layout_constraintHorizontal_bias="0.4"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/rg_CC"
+        app:layout_constraintVertical_bias="0.972" />
 
     <RadioGroup
         android:id="@+id/rg_CC"
-        android:layout_width="149dp"
-        android:layout_height="171dp"
+        android:layout_width="354dp"
+        android:layout_height="41dp"
         android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_bias="0.963"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/btn_CC_done"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.327">
+        app:layout_constraintVertical_bias="0.974">
 
         <RadioButton
             android:id="@+id/radioButton1"
-            android:layout_width="111dp"
+            android:layout_width="72dp"
             android:layout_height="wrap_content"
             android:checked="true"
             android:text="1 Hz" />
 
         <RadioButton
             android:id="@+id/radioButton10"
-            android:layout_width="111dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="true"
             android:text="10 Hz" />
 
         <RadioButton
             android:id="@+id/radioButton100"
-            android:layout_width="109dp"
+            android:layout_width="86dp"
             android:layout_height="wrap_content"
             android:text="100 Hz" />
 
         <RadioButton
             android:id="@+id/radioButton1000"
-            android:layout_width="112dp"
+            android:layout_width="94dp"
             android:layout_height="wrap_content"
             android:text="1000 Hz" />
+
     </RadioGroup>
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Channel name"
+        app:layout_constraintRight_toLeftOf="@+id/tv_record"
+        android:layout_marginRight="73dp"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/spinner1"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Configuration name"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="27dp"
+        app:layout_constraintHorizontal_bias="0.0" />
+
+    <EditText
+        android:id="@+id/et_CC_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:hint="Name"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginBottom="21dp"
+        app:layout_constraintBottom_toTopOf="@+id/tv_record"
+        app:layout_constraintHorizontal_bias="0.0"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/textView4"
+        app:layout_constraintVertical_bias="1.0" />
 </android.support.constraint.ConstraintLayout>

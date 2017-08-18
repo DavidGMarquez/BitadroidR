@@ -83,7 +83,6 @@ public class JsonManager {
         }
     }
 
-
     private boolean createPath(){
         File directory =new File(path);
         if(!directory.exists()){
@@ -121,11 +120,6 @@ public class JsonManager {
             Log.d(TAG, "deleteConfiguration: configuration deleted");
             updateChannelConfigFile(tempList);
         }
-
-
-
-
-
     }
 
 

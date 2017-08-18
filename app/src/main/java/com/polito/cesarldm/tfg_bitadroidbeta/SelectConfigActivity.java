@@ -91,7 +91,7 @@ public class SelectConfigActivity extends AppCompatActivity implements View.OnCl
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         ChannelConfiguration selectedChannelConfig=adapter.getItem(position);
-        if(selectedChannelConfig.getActiveChannels().length==1){
+        if(selectedChannelConfig.getRecordingChannels().length==1){
             Intent intentStartSingle = new Intent(this, ShowSingleDataActivity.class);
             intentStartSingle.putExtra("Device",device);
             intentStartSingle.putExtra("Config",selectedChannelConfig);

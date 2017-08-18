@@ -9,13 +9,15 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.polito.cesarldm.tfg_bitadroidbeta.vo.ChannelConfiguration;
+
 import info.plux.pluxapi.bitalino.BITalinoDescription;
 import info.plux.pluxapi.bitalino.BITalinoState;
 
 public class MainMenuActivity extends AppCompatActivity implements View.OnClickListener{
 
     //UI Elements
-    Button btnScanDev,btnStartRec,btnShowRec;
+    Button btnScanDev,btnStartRec,btnShowRec,btnEcg;
     TextView tvDeviceName,tvDeviceMac;
     //Deice selected by user
     private BluetoothDevice device;
@@ -31,9 +33,11 @@ public class MainMenuActivity extends AppCompatActivity implements View.OnClickL
         btnStartRec=(Button) findViewById(R.id.btn_MM_start_recordings);
         btnShowRec=(Button) findViewById(R.id.btn_MM_show_recordings);
         btnScanDev=(Button) findViewById(R.id.btn_MM_scan);
+        btnEcg=(Button) findViewById(R.id.btn_MM_ECG);
         btnScanDev.setOnClickListener(this);
         btnStartRec.setOnClickListener(this);
         btnShowRec.setOnClickListener(this);
+        btnEcg.setOnClickListener(this);
     }
     @Override
     protected void onStart(){
@@ -88,8 +92,13 @@ public class MainMenuActivity extends AppCompatActivity implements View.OnClickL
                 recordIntent.putExtra("Device",device);
                 startActivity(recordIntent);
                 break;
-
-
+            case R.id.btn_MM_ECG:
+                Intent hMIntent =new Intent(this,HeartMonitorActivity.class);
+                ChannelConfiguration heartMonitor=new ChannelConfiguration("Heart Monitor",new int[]
+                        {1},new int[] {1},100,new String[] {"ECG"},new String[] {"ECG"});
+                hMIntent.putExtra("Device",device);
+                hMIntent.putExtra("Config",heartMonitor);
+                startActivity(hMIntent);
         }
 
     }

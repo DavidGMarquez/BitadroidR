@@ -43,8 +43,8 @@ public class MPAndroidGraph implements OnChartValueSelectedListener{
         this.lineDataSize=0;
         this.mConfiguration=mConfiguration;
         this.chart=new LineChart(context);
-        this.legendName=mConfiguration.activeChannelsNames[position];
-        this.channelNum=mConfiguration.activeChannels[position];
+        this.legendName=mConfiguration.shownNames[position];
+        this.channelNum=mConfiguration.recordingChannels[position];
         this.xRange=mConfiguration.getSampleRate()*10000;
         chart.getDescription().setEnabled(true);
         this.viewPortHandler=chart.getViewPortHandler();
@@ -195,6 +195,11 @@ public class MPAndroidGraph implements OnChartValueSelectedListener{
 
     public Entry getSelectedValue(){
         return this.entry;}
+
+    public void setHighLightt(float xvalue){
+        chart.highlightValue(xvalue,1,true);
+
+    }
 
 
 }

@@ -11,7 +11,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.graphics.Rect;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -24,19 +23,23 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
+import android.widget.RelativeLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.data.Entry;
-import com.polito.cesarldm.tfg_bitadroidbeta.services.*;
+import com.polito.cesarldm.tfg_bitadroidbeta.R;
+import com.polito.cesarldm.tfg_bitadroidbeta.beats.Bdac;
+import com.polito.cesarldm.tfg_bitadroidbeta.beats.SampleRate;
+import com.polito.cesarldm.tfg_bitadroidbeta.services.BitalinoCommunicationService;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.ChannelConfiguration;
+import com.polito.cesarldm.tfg_bitadroidbeta.vo.DFTManager;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.FrameTransferFunction;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.MPAndroidGraph;
-
+import com.polito.cesarldm.tfg_bitadroidbeta.vo.SignalFilter;
 
 import java.util.ArrayList;
 
@@ -44,46 +47,53 @@ import info.plux.pluxapi.bitalino.BITalinoFrame;
 
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
-public class ShowDataActivity extends AppCompatActivity implements View.OnClickListener {
-
+public class HeartMonitorActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener{
     static final String TAG="SHOW DATA ACTIVITY";
     //UI
     Button btnStart, btnStop;
+    SeekBar sbUpTh;
     ArrayList<BITalinoFrame> frames=new ArrayList<BITalinoFrame>();
-    ArrayList<MPAndroidGraph> graphs=new ArrayList<MPAndroidGraph>();
-    ScrollView scrollView;
+    TextView tvMax,tvMin,tvAvg,tvSel,tvSbVal;
+    //ArrayList<MPAndroidGraph> graphs=new ArrayList<MPAndroidGraph>();
+    MPAndroidGraph mpAndroidGraph;
     //ListView graphList;
     FrameTransferFunction frameTransFunc;
 
 
     private double samplingFrames;
     private double samplingCounter = 0;
-    private double timeCounter = 0;
+    private long beatSampleCount;
+   static private double timeCounter = 0;
+    static private float  xValueRatio;
     float xValue=0;
     private int numberOfFrames;
+    private int delay;
 
     BluetoothDevice device;
-    ChannelConfiguration mConfiguration;
+    DFTManager mDftManager;
+    static ChannelConfiguration mConfiguration;
+    private int dataCheckCount=0;
     boolean mBound;
     boolean isVisible;
     boolean isConnected=false;
-    private final Messenger activityMessenger = new Messenger(new IncomingHandler());
+    private final Messenger activityMessenger = new Messenger(new HeartMonitorActivity.IncomingHandler());
     Messenger mService = null;
     private LayoutInflater inflater;
     public ProgressDialog progressDialogConnecting;
-
-
-
+    private SignalFilter mSignalFilter;
+    float sumForAvg=0;
+    private float yMax,yMin,avg;
+    private Bdac bdac;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_show_data);
+        setContentView(R.layout.activity_heart_monitor);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         if(!getIntent().hasExtra("Device")||!getIntent().hasExtra("Config")){
-           Toast.makeText(this, "No device or config,", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "No device or config,", Toast.LENGTH_SHORT).show();
             finish();
-       }
+        }
         inflater = this.getLayoutInflater();
 
         //Solicitar permisos
@@ -91,25 +101,28 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
         if(getIntent().getParcelableExtra("Device")!=null) {
             device = getIntent().getParcelableExtra("Device");
             mConfiguration = getIntent().getParcelableExtra("Config");
-            btnStart = (Button) findViewById(R.id.btn_SDA_start);
+            tvMax=(TextView)findViewById(R.id.tv_HM_maxY);
+            tvMin=(TextView)findViewById(R.id.tv_HM_minY);
+            tvAvg=(TextView)findViewById(R.id.tv_HM_avg);
+            tvSel=(TextView)findViewById(R.id.tv_HM_selected);
+            tvSbVal=(TextView)findViewById(R.id.tv_HM_sb_value);
+            btnStart = (Button) findViewById(R.id.btn_HM_start);
             btnStart.setOnClickListener(this);
-            btnStop = (Button) findViewById(R.id.btn_SDA_stop);
+            btnStop = (Button) findViewById(R.id.btn_HM_Stop);
             btnStop.setOnClickListener(this);
-            scrollView=(ScrollView) findViewById(R.id.sc_SD);
             Intent intent = new Intent(this, BitalinoCommunicationService.class);
-            //Intent intent = new Intent(this, BitalinoDataService.class);
-            //intent.putExtra("Device", device);
-            //intent.putExtra("Config", mConfiguration);
-
-            //-----Part of code created by @author Carlos Marten, Bitadroid APP NewRecordingActivity
+            intent.putExtra("Device", device);
+            intent.putExtra("Config", mConfiguration);
             samplingFrames = (double) mConfiguration.getSampleRate() / mConfiguration.getVisualizationRate();
             numberOfFrames = mConfiguration.getSampleRate();
-            //*************************************************************************************
+            xValueRatio=mConfiguration.getVisualizationRate()/10;
             setActivityLayout();
             startService(intent);
-            progressDialogConnecting=new ProgressDialog(ShowDataActivity.this);
+            progressDialogConnecting=new ProgressDialog(HeartMonitorActivity.this);
             progressDialogConnecting.setMessage("Connecting to Bitalino");
             frameTransFunc=new FrameTransferFunction(mConfiguration);
+            mDftManager=new DFTManager();
+            bdac = new Bdac();
         }else {
             Toast.makeText(this, "No device selected ", Toast.LENGTH_SHORT).show();
             finish();
@@ -118,22 +131,30 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
 
     }
     private void setActivityLayout() {
-        LayoutParams graphParams;
-        View graphsView=findViewById(R.id.ll_SD);
 
-        graphParams = new LayoutParams(LayoutParams.MATCH_PARENT,250);
+        ViewGroup.LayoutParams layoutParams=new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        mpAndroidGraph=new MPAndroidGraph(this,mConfiguration,0);
+        RelativeLayout rl=(RelativeLayout)findViewById(R.id.relativeLayout_HM);
+        mpAndroidGraph.getGraphView().setLayoutParams(layoutParams);
+        rl.addView(mpAndroidGraph.getGraphView());
+        mSignalFilter=new SignalFilter((mpAndroidGraph));
+        sbUpTh=(SeekBar)findViewById(R.id.sb_HM_aboveTH);
+        sbUpTh.setOnSeekBarChangeListener(this);
+        sbUpTh.setMax(100);
+        /**ViewGroup.LayoutParams graphParams;
+         View graphsView=findViewById(R.id.ll_SD);
 
-        for(int i=0; i<mConfiguration.getSize();i++){
-            graphs.add(new MPAndroidGraph(this,mConfiguration,i));
-                    //mConfiguration.activeChannels[i],mConfiguration.activeChannelsNames[i]));
-            LinearLayout graph = (LinearLayout) inflater.inflate(
-                    R.layout.in_ly_graph, null);
-            //graphs.get(i).getGraphView().setOnTouchListener(graphTouchListener);
-            graph.addView(graphs.get(i).getGraphView());
-            ((ViewGroup) graphsView).addView(graph, graphParams);
-        }
+         graphParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,250);
+
+         for(int i=0; i<mConfiguration.getSize();i++){
+         graphs.add(new MPAndroidGraph(this,mConfiguration.activeChannels[i],mConfiguration.activeChannelsNames[i]));
+         LinearLayout graph = (LinearLayout) inflater.inflate(
+         R.layout.in_ly_graph, null);
+         //graphs.get(i).getGraphView().setOnTouchListener(graphTouchListener);
+         graph.addView(graphs.get(i).getGraphView());
+         ((ViewGroup) graphsView).addView(graph, graphParams);
+         }**/
     }
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -141,6 +162,7 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
                 Context.BIND_AUTO_CREATE);
         if(!isConnected){
             progressDialogConnecting.show();
+
         }
     }
     @Override
@@ -150,22 +172,24 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-    }
-    @Override
     protected void onPause(){
         super.onPause();
         isVisible=false;
     }
     @Override
-    protected  void onDestroy(){
+    protected void onStop() {
+        super.onStop();
+
+    }
+    @Override
+    protected void onDestroy(){
         super.onDestroy();
         if(mBound) {
-            this.unbindService(mConnection);
+            unbindService(mConnection);
         }
         Intent intent = new Intent(this, BitalinoCommunicationService.class);
         stopService(intent);
+
     }
     @Override
     public void onBackPressed(){
@@ -177,12 +201,29 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.btn_SDA_start:
+            case R.id.btn_HM_start:
                 startRecording();
+                startBeatDetection();
                 break;
-            case R.id.btn_SDA_stop:
+            case R.id.btn_HM_Stop:
                 stopRecording();
         }
+
+    }
+
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        mSignalFilter.setUpThreshold(progress);
+        tvSbVal.setText(progress+"%");
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
 
     }
 
@@ -192,13 +233,13 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
             switch (msg.what) {
                 case BitalinoCommunicationService.MSG_SEND_FRAME:
                     Bundle b =msg.getData();
-                    final BITalinoFrame frame=b.getParcelable("Frame");
+                    BITalinoFrame frame=b.getParcelable("Frame");
+                    addSampletoBeatDetection(frame);
                     appendData(frame);
-
+                    dataCheckCount++;
                     break;
                 case BitalinoCommunicationService.MSG_SEND_CONNECTION_OFF:
                     Toast.makeText(getApplicationContext(),"Device Disconnected",Toast.LENGTH_SHORT).show();
-
                     break;
                 case BitalinoCommunicationService.MSG_ERROR:
                     switch(msg.arg1){
@@ -211,53 +252,60 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
                     break;
                 case BitalinoCommunicationService.MSG_SEND_CONNECTION_ON:
                     progressDialogConnecting.dismiss();
-
                 default:
                     super.handleMessage(msg);
-
             }
         }
     }
 
     private void appendData(BITalinoFrame frame) {
-
+        float f;
+        int position=mConfiguration.recordingChannels[0];
         if (samplingCounter++ >= samplingFrames) {
-            //float[] conVal=frameTransFunc.getConvertedValues(frame);
-            // calculates x value of graphs
             timeCounter++;
-            xValue = (float)timeCounter / 100
-                    * 1000;
-            // gets default share preferences with multi-process flag
-            if(isVisible) {
-                for (int i = 0; i < graphs.size(); i++) {
-                    if (isViewVisible(graphs.get(i).getGraphView())) {
-                        float f = frame.getAnalog(mConfiguration.recordingChannels[i]);
-                        //float f=(float)frame.getAnalog(mConfiguration.activeChannels[i]);
-                        Entry entry = new Entry(xValue * 10, f);
-                        graphs.get(i).addEntry(entry);
-                    }
-
+           xValue=xValueGenerator(timeCounter);
+            /** if(mSignalFilter.checkFrame(frame.getAnalog(position))) {
+             f = frame.getAnalog(position);
+             }else{
+             f=mSignalFilter.getAvg();
+             }**/
+            f = frame.getAnalog(position);
+            if (isVisible) {
+                if (mSignalFilter.checkFrame(f)) {
+                    sumForAvg += f;
+                    Entry entry = new Entry(xValue, f);
+                    mpAndroidGraph.addEntry(entry);
+                    mSignalFilter.updateValues(sumForAvg);
+                }else{
+                    f=mSignalFilter.getAvg();
+                    sumForAvg+=f;
+                    Entry entry=new Entry(xValue,f);
+                    mpAndroidGraph.addEntry(entry);
+                    mSignalFilter.updateValues(sumForAvg);
+                }
+                samplingCounter -= samplingFrames;
+                if (dataCheckCount >= mConfiguration.getVisualizationRate() / 2) {
+                    updateStatistics();
+                    dataCheckCount = 0;
                 }
             }
-            samplingCounter -= samplingFrames;
-
         }
-
-
 
     }
-    private boolean isViewVisible(View view) {
-        Rect scrollBounds = new Rect();
-        scrollView.getHitRect(scrollBounds);
-        //float top = view.getY();
-        //float bottom = top + view.getHeight();
+    private float xValueGenerator(double timeCounter) {
+        float tempXValue = (float) timeCounter / xValueRatio
+                * mConfiguration.getVisualizationRate();
+        return tempXValue;
+    }
 
-        //if (scrollBounds.top <= top && scrollBounds.bottom >= bottom) {
-        if(view.getLocalVisibleRect(scrollBounds)){
-            return true;
-        } else {
-            return false;
-        }
+
+
+    private void updateStatistics() {
+        tvMax.setText("Max: "+mSignalFilter.getyMax());
+        tvMin.setText("Min: "+mSignalFilter.getyMin());
+        tvAvg.setText("Avg: "+mSignalFilter.getAvg());
+        tvSel.setText("Y: "+Float.toString(mpAndroidGraph.getSelectedValue().getY()));
+
     }
 
     /**
@@ -331,7 +379,6 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
      * Permission check explicitly required from user at run time
      *
      * */
-
     private void permissionCheck() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             //Android Marshmallow and above permission check
@@ -351,8 +398,6 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
             }
         }
     }
-
-
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         switch (requestCode) {
@@ -377,5 +422,56 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
                 return;
         }
     }
+    /**
+     * Adaptacion de codigo de detccion de latidos "AÑADIR NOMBRE Y DIRECCION" para lectura a tiempo
+     * real
+     */
+    private void startBeatDetection() {
+        toastMessageShort("Beat detection started");
+        bdac.resetBdac();
+        SampleRate.setSampleRate(mConfiguration.sampleRate);
+        bdac.resetBdac();
+        beatSampleCount = 0;
+
+
+    }
+    private void addSampletoBeatDetection(BITalinoFrame frame){
+        int position=mConfiguration.recordingChannels[0];
+        float f = frame.getAnalog(position);
+        ++beatSampleCount;
+        delay = bdac.beatDetect((int) f, (int) beatSampleCount);
+
+        // If a beat was detected, annotate the beat location
+        // and type.
+        if (delay != 0) {
+            long detectionTimeR = beatSampleCount - delay;
+            addHighligths((int)detectionTimeR);
+            //generarMarcas(signals.get(0).getSignal(), detectionTimeR,
+                    //Color.GREEN);
+
+        }
+    }
+    public void addHighligths(int time){
+        toastMessageShort("highligth added");
+       float x= xValueGenerator((double) time);
+        mpAndroidGraph.setHighLightt(x);
+    }
+
+    /**  TOAST METHODS
+     *
+     */
+    public void toastMessageShort(String a) {
+        Toast.makeText(this, a, Toast.LENGTH_SHORT).show();
+
+    }
+
+    public void toastMessageLong(String a) {
+        Toast.makeText(this, a, Toast.LENGTH_LONG).show();
+
+    }
 
 }
+
+
+
+

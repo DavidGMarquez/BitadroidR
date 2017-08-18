@@ -258,7 +258,7 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
 
     private void appendData(BITalinoFrame frame) {
         float f;
-        int position=mConfiguration.activeChannels[0];
+        int position=mConfiguration.recordingChannels[0];
         if (samplingCounter++ >= samplingFrames) {
             timeCounter++;
             xValue = (float) timeCounter / xValueRatio
@@ -275,13 +275,17 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
                     Entry entry = new Entry(xValue, f);
                     mpAndroidGraph.addEntry(entry);
                     mSignalFilter.updateValues(sumForAvg);
+                }else{
+                    f=mSignalFilter.getAvg();
+                    sumForAvg+=f;
+                    Entry entry=new Entry(xValue,f);
+                    mpAndroidGraph.addEntry(entry);
+                    mSignalFilter.updateValues(sumForAvg);
                 }
-
                 samplingCounter -= samplingFrames;
                 if (dataCheckCount >= mConfiguration.getVisualizationRate() / 2) {
                     updateStatistics();
                     dataCheckCount = 0;
-
                 }
             }
         }

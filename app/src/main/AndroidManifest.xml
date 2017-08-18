@@ -42,7 +42,9 @@
         <service
             android:name=".services.BitalinoCommunicationService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
+
+        <activity android:name=".HeartMonitorActivity"></activity>
     </application>
 
 </manifest>

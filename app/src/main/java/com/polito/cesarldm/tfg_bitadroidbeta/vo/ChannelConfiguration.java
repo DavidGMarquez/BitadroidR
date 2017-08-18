@@ -28,6 +28,8 @@ public class ChannelConfiguration implements Parcelable{
     public int visualizationRate;
     public String creationDate;
     private static DateFormat df=new SimpleDateFormat("dd/mm/yyyy");
+    public int[] recordingChannels;
+    public String[] shownNames;
 
 
     public ChannelConfiguration(int[] activeChannels){
@@ -36,11 +38,13 @@ public class ChannelConfiguration implements Parcelable{
     }
 
 
-    public ChannelConfiguration(String name,int[] activeChannels,int sampleRate,String[] activeChannelsNames){
+    public ChannelConfiguration(String name,int[] activeChannels,int[]recordingChannels,int sampleRate,String[] activeChannelsNames,String[] shownNames){
         this.activeChannels=activeChannels;
         this.sampleRate=sampleRate;
         this.name=name;
         this.activeChannelsNames=activeChannelsNames;
+        this.recordingChannels=recordingChannels;
+        this.shownNames=shownNames;
         switch (sampleRate){
             case 1:
                 this.visualizationRate=1;
@@ -62,6 +66,14 @@ public class ChannelConfiguration implements Parcelable{
 
     }
 
+    public int[] getRecordingChannels() {
+        return recordingChannels;
+    }
+
+    public void setRecordingChannels(int[] recordingChannels) {
+        this.recordingChannels = recordingChannels;
+    }
+
     public String getCreationDate() {
         return creationDate;
     }
@@ -81,7 +93,7 @@ public class ChannelConfiguration implements Parcelable{
         return name;
     }
     public int getSize(){
-        return activeChannels.length;
+        return recordingChannels.length;
     }
 
     public String channelsToString(){
@@ -136,6 +148,8 @@ public class ChannelConfiguration implements Parcelable{
         dest.writeInt(visualizationRate);
         dest.writeString(creationDate);
         dest.writeStringArray(activeChannelsNames);
+        dest.writeIntArray(recordingChannels);
+        dest.writeStringArray(shownNames);
 
     }
     public static final Parcelable.Creator<ChannelConfiguration> CREATOR
@@ -158,6 +172,8 @@ public class ChannelConfiguration implements Parcelable{
         visualizationRate=in.readInt();
         creationDate=in.readString();
         activeChannelsNames=in.createStringArray();
+        recordingChannels=in.createIntArray();
+       shownNames=in.createStringArray();
 
     }
 
