@@ -121,7 +121,7 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
         LayoutParams graphParams;
         View graphsView=findViewById(R.id.ll_SD);
 
-        graphParams = new LayoutParams(LayoutParams.MATCH_PARENT,250);
+        graphParams = new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT);
 
         for(int i=0; i<mConfiguration.getSize();i++){
             graphs.add(new MPAndroidGraph(this,mConfiguration,i));
@@ -225,15 +225,14 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
             //float[] conVal=frameTransFunc.getConvertedValues(frame);
             // calculates x value of graphs
             timeCounter++;
-            xValue = (float)timeCounter / 100
-                    * 1000;
+            xValue = (float)(timeCounter* 1000) / mConfiguration.getVisualizationRate();
             // gets default share preferences with multi-process flag
             if(isVisible) {
                 for (int i = 0; i < graphs.size(); i++) {
                     if (isViewVisible(graphs.get(i).getGraphView())) {
                         float f = frame.getAnalog(mConfiguration.recordingChannels[i]);
                         //float f=(float)frame.getAnalog(mConfiguration.activeChannels[i]);
-                        Entry entry = new Entry(xValue * 10, f);
+                        Entry entry = new Entry(xValue, f);
                         graphs.get(i).addEntry(entry);
                     }
 

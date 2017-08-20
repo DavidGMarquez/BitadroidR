@@ -1,6 +1,7 @@
 package com.polito.cesarldm.tfg_bitadroidbeta.vo;
 import android.content.Context;
 import android.graphics.Color;
+import android.view.ViewGroup;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
@@ -60,7 +61,7 @@ public class MPAndroidGraph implements OnChartValueSelectedListener{
         chart.setScaleXEnabled(true);
         chart.setScaleYEnabled(false);
         chart.zoomToCenter(20f,1f);
-        chart.setMinimumHeight(250);
+        chart.setMinimumHeight(ViewGroup.LayoutParams.MATCH_PARENT);
         chart.setDragOffsetX(30);
         this.lineData=new LineData();
         chart.setData(lineData);
@@ -104,7 +105,7 @@ public class MPAndroidGraph implements OnChartValueSelectedListener{
                 set = createSet();
                 data.addDataSet(set);
             }
-
+            set.setHighlightEnabled(true);
             data.addEntry(entry,0);
 
             data.notifyDataChanged();
@@ -129,6 +130,7 @@ public class MPAndroidGraph implements OnChartValueSelectedListener{
         LineDataSet set = new LineDataSet(null, this.legendName);
         set.setAxisDependency(YAxis.AxisDependency.LEFT);
         set.setDrawCircles(false);
+        set.setHighlightEnabled(true);
         set.setColor(ColorTemplate.rgb(color));
         set.setLineWidth(1f);
         set.setFillAlpha(65);
@@ -197,7 +199,7 @@ public class MPAndroidGraph implements OnChartValueSelectedListener{
         return this.entry;}
 
     public void setHighLightt(float xvalue){
-        chart.highlightValue(xvalue,1,true);
+        chart.highlightValue(xvalue,0,true);
 
     }
 

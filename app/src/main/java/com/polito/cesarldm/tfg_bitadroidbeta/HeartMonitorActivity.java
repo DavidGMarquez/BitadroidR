@@ -11,12 +11,15 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,6 +28,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -47,22 +51,29 @@ import info.plux.pluxapi.bitalino.BITalinoFrame;
 
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
-public class HeartMonitorActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener{
+public class HeartMonitorActivity extends AppCompatActivity implements View.OnClickListener{
     static final String TAG="SHOW DATA ACTIVITY";
     //UI
     Button btnStart, btnStop;
     SeekBar sbUpTh;
     ArrayList<BITalinoFrame> frames=new ArrayList<BITalinoFrame>();
-    TextView tvMax,tvMin,tvAvg,tvSel,tvSbVal;
+    TextView bpm;
+    Chronometer chrono;
+    static SoundPool soundPool;
+    static AudioManager amg;
+    static int audio;
     //ArrayList<MPAndroidGraph> graphs=new ArrayList<MPAndroidGraph>();
     MPAndroidGraph mpAndroidGraph;
+    MPAndroidGraph mpAndroidGraphBPM;
     //ListView graphList;
     FrameTransferFunction frameTransFunc;
 
 
     private double samplingFrames;
     private double samplingCounter = 0;
-    private long beatSampleCount;
+    private int updateBPMCounter=0;
+    private long beatSampleCount=0;
+    private long timeWhenStopped=0;
    static private double timeCounter = 0;
     static private float  xValueRatio;
     float xValue=0;
@@ -99,13 +110,9 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
         //Solicitar permisos
         permissionCheck();
         if(getIntent().getParcelableExtra("Device")!=null) {
+            initSound();
             device = getIntent().getParcelableExtra("Device");
             mConfiguration = getIntent().getParcelableExtra("Config");
-            tvMax=(TextView)findViewById(R.id.tv_HM_maxY);
-            tvMin=(TextView)findViewById(R.id.tv_HM_minY);
-            tvAvg=(TextView)findViewById(R.id.tv_HM_avg);
-            tvSel=(TextView)findViewById(R.id.tv_HM_selected);
-            tvSbVal=(TextView)findViewById(R.id.tv_HM_sb_value);
             btnStart = (Button) findViewById(R.id.btn_HM_start);
             btnStart.setOnClickListener(this);
             btnStop = (Button) findViewById(R.id.btn_HM_Stop);
@@ -113,6 +120,8 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
             Intent intent = new Intent(this, BitalinoCommunicationService.class);
             intent.putExtra("Device", device);
             intent.putExtra("Config", mConfiguration);
+            bpm=(TextView)findViewById(R.id.tv_HM_bpm);
+            chrono=(Chronometer)findViewById(R.id.chronometer2);
             samplingFrames = (double) mConfiguration.getSampleRate() / mConfiguration.getVisualizationRate();
             numberOfFrames = mConfiguration.getSampleRate();
             xValueRatio=mConfiguration.getVisualizationRate()/10;
@@ -130,6 +139,20 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
 
 
     }
+
+    private void initSound() {
+        int maxStreams=1;
+        Context mContext=getApplicationContext();
+        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP){
+            soundPool=new SoundPool.Builder().setMaxStreams(maxStreams).build();
+        }else {
+            soundPool = new SoundPool(maxStreams, AudioManager.STREAM_MUSIC, 0);
+        }
+        audio=soundPool.load(mContext,R.raw.beep,1);
+        amg=(AudioManager)mContext.getSystemService(Context.AUDIO_SERVICE);
+    }
+
+
     private void setActivityLayout() {
 
         ViewGroup.LayoutParams layoutParams=new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -137,10 +160,13 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
         RelativeLayout rl=(RelativeLayout)findViewById(R.id.relativeLayout_HM);
         mpAndroidGraph.getGraphView().setLayoutParams(layoutParams);
         rl.addView(mpAndroidGraph.getGraphView());
-        mSignalFilter=new SignalFilter((mpAndroidGraph));
-        sbUpTh=(SeekBar)findViewById(R.id.sb_HM_aboveTH);
-        sbUpTh.setOnSeekBarChangeListener(this);
-        sbUpTh.setMax(100);
+        mpAndroidGraphBPM=new MPAndroidGraph(this,mConfiguration,0);
+        RelativeLayout rl2=(RelativeLayout)findViewById(R.id.rl_secondGraph);
+        mpAndroidGraphBPM.getGraphView().setLayoutParams(layoutParams);
+        rl2.addView(mpAndroidGraphBPM.getGraphView());
+
+
+
         /**ViewGroup.LayoutParams graphParams;
          View graphsView=findViewById(R.id.ll_SD);
 
@@ -204,28 +230,18 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
             case R.id.btn_HM_start:
                 startRecording();
                 startBeatDetection();
+                chrono.setBase(SystemClock.elapsedRealtime()+timeWhenStopped);
+                chrono.start();
                 break;
             case R.id.btn_HM_Stop:
                 stopRecording();
+                timeWhenStopped=chrono.getBase()- SystemClock.elapsedRealtime();
+                chrono.stop();
+
         }
 
     }
 
-    @Override
-    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        mSignalFilter.setUpThreshold(progress);
-        tvSbVal.setText(progress+"%");
-    }
-
-    @Override
-    public void onStartTrackingTouch(SeekBar seekBar) {
-
-    }
-
-    @Override
-    public void onStopTrackingTouch(SeekBar seekBar) {
-
-    }
 
     class IncomingHandler extends Handler {
         @Override
@@ -271,42 +287,32 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
              }**/
             f = frame.getAnalog(position);
             if (isVisible) {
-                if (mSignalFilter.checkFrame(f)) {
-                    sumForAvg += f;
                     Entry entry = new Entry(xValue, f);
                     mpAndroidGraph.addEntry(entry);
-                    mSignalFilter.updateValues(sumForAvg);
-                }else{
-                    f=mSignalFilter.getAvg();
-                    sumForAvg+=f;
-                    Entry entry=new Entry(xValue,f);
-                    mpAndroidGraph.addEntry(entry);
-                    mSignalFilter.updateValues(sumForAvg);
-                }
-                samplingCounter -= samplingFrames;
-                if (dataCheckCount >= mConfiguration.getVisualizationRate() / 2) {
-                    updateStatistics();
+                    samplingCounter -= samplingFrames;
+                if (dataCheckCount >= mConfiguration.getSampleRate()*10) {
+                    updateStatistics(xValue);
                     dataCheckCount = 0;
+                    updateBPMCounter=0;
                 }
             }
         }
 
     }
     private float xValueGenerator(double timeCounter) {
-        float tempXValue = (float) timeCounter / xValueRatio
-                * mConfiguration.getVisualizationRate();
+        float tempXValue = (float) (timeCounter* 1000) / mConfiguration.getVisualizationRate();
         return tempXValue;
     }
 
 
 
-    private void updateStatistics() {
-        tvMax.setText("Max: "+mSignalFilter.getyMax());
-        tvMin.setText("Min: "+mSignalFilter.getyMin());
-        tvAvg.setText("Avg: "+mSignalFilter.getAvg());
-        tvSel.setText("Y: "+Float.toString(mpAndroidGraph.getSelectedValue().getY()));
+ public void updateStatistics(float xValue){
+     long beats=updateBPMCounter*6;
+     bpm.setText("Bpm: "+beats);
+     Entry e=new Entry(xValue,(float) beats);
+     mpAndroidGraphBPM.addEntry(e);
 
-    }
+ }
 
     /**
      * Class for interacting with the main interface of the service.
@@ -452,9 +458,10 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
         }
     }
     public void addHighligths(int time){
-        toastMessageShort("highligth added");
+        playSound(audio);
        float x= xValueGenerator((double) time);
         mpAndroidGraph.setHighLightt(x);
+        updateBPMCounter++;
     }
 
     /**  TOAST METHODS
@@ -467,6 +474,15 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
 
     public void toastMessageLong(String a) {
         Toast.makeText(this, a, Toast.LENGTH_LONG).show();
+
+    }
+    static void playSound(int sound){
+        soundPool.play(sound,1,1,1,0,1f);
+    }
+    public void cleanUpIfEnd(){
+        audio=0;
+        soundPool.release();
+        soundPool=null;
 
     }
 

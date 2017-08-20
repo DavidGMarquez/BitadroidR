@@ -123,7 +123,7 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
             progressDialogConnecting=new ProgressDialog(ShowSingleDataActivity.this);
             progressDialogConnecting.setMessage("Connecting to Bitalino");
             frameTransFunc=new FrameTransferFunction(mConfiguration);
-            mDftManager=new DFTManager();
+
         }else {
             Toast.makeText(this, "No device selected ", Toast.LENGTH_SHORT).show();
             finish();
@@ -261,8 +261,8 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
         int position=mConfiguration.recordingChannels[0];
         if (samplingCounter++ >= samplingFrames) {
             timeCounter++;
-            xValue = (float) timeCounter / xValueRatio
-                    * mConfiguration.getVisualizationRate();
+            xValue = (float) (timeCounter* 1000) / mConfiguration.getVisualizationRate();
+                    ;
             /** if(mSignalFilter.checkFrame(frame.getAnalog(position))) {
              f = frame.getAnalog(position);
              }else{
@@ -291,15 +291,12 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
         }
 
     }
-
     private void updateStatistics() {
         tvMax.setText("Max: "+mSignalFilter.getyMax());
         tvMin.setText("Min: "+mSignalFilter.getyMin());
         tvAvg.setText("Avg: "+mSignalFilter.getAvg());
         tvSel.setText("Y: "+Float.toString(mpAndroidGraph.getSelectedValue().getY()));
-
     }
-
     /**
      * Class for interacting with the main interface of the service.
      */
@@ -314,13 +311,11 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
             mBound = true;
             connectToBitalino();
         }
-
         public void onServiceDisconnected(ComponentName className) {
             // This is called when the connection with the service has been
             // unexpectedly disconnected -- that is, its process crashed.
             mService = null;
             mBound = false;
-
         }
     };
     public void connectToBitalino() {
