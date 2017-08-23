@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Rect;
+import android.location.Location;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -28,6 +29,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.Toast;
 
@@ -48,9 +50,10 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
 
     static final String TAG="SHOW DATA ACTIVITY";
     //UI
-    Button btnStart, btnStop;
+    Button btnStart, btnStop,btnMap;
     ArrayList<BITalinoFrame> frames=new ArrayList<BITalinoFrame>();
     ArrayList<MPAndroidGraph> graphs=new ArrayList<MPAndroidGraph>();
+    ArrayList<Location> locations=new ArrayList<Location>();
     ScrollView scrollView;
     //ListView graphList;
     FrameTransferFunction frameTransFunc;
@@ -95,7 +98,9 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
             btnStart.setOnClickListener(this);
             btnStop = (Button) findViewById(R.id.btn_SDA_stop);
             btnStop.setOnClickListener(this);
-            scrollView=(ScrollView) findViewById(R.id.sc_SD);
+            btnMap=(Button) findViewById(R.id.bt_SDA_map);
+            btnMap.setOnClickListener(this);
+            scrollView=(ScrollView)findViewById(R.id.sc_SD);
             Intent intent = new Intent(this, BitalinoCommunicationService.class);
             //Intent intent = new Intent(this, BitalinoDataService.class);
             //intent.putExtra("Device", device);
@@ -118,19 +123,24 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
 
     }
     private void setActivityLayout() {
-        LayoutParams graphParams;
-        View graphsView=findViewById(R.id.ll_SD);
+        //ScrollView sc=(ScrollView)findViewById(R.id.sc_SD);
+        LinearLayout ll=(LinearLayout)findViewById(R.id.ll_SD);
 
+        //sc.addView(ll);
+        LayoutParams graphParams,relativeParams;
+       // View graphsView=findViewById(R.id.ll_SD);
         graphParams = new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT);
-
+        relativeParams=new LayoutParams(LayoutParams.MATCH_PARENT,250);
         for(int i=0; i<mConfiguration.getSize();i++){
             graphs.add(new MPAndroidGraph(this,mConfiguration,i));
                     //mConfiguration.activeChannels[i],mConfiguration.activeChannelsNames[i]));
-            LinearLayout graph = (LinearLayout) inflater.inflate(
-                    R.layout.in_ly_graph, null);
+            RelativeLayout graph = (RelativeLayout) inflater.inflate(
+                    R.layout.graph_layout, null);
+
             //graphs.get(i).getGraphView().setOnTouchListener(graphTouchListener);
-            graph.addView(graphs.get(i).getGraphView());
-            ((ViewGroup) graphsView).addView(graph, graphParams);
+            graph.addView(graphs.get(i).getGraphView(),relativeParams);
+            //((ViewGroup)graphsView).addView(graph, graphParams);
+            ll.addView(graph,graphParams);
         }
     }
 
@@ -179,9 +189,18 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
         switch (v.getId()){
             case R.id.btn_SDA_start:
                 startRecording();
+                Intent gpsIntent=new Intent(this,GPSService.class);
+                startService(gpsIntent);
                 break;
             case R.id.btn_SDA_stop:
                 stopRecording();
+                Intent gpsIntentStop=new Intent(this,GPSService.class);
+                stopService(gpsIntentStop);
+                break;
+            case R.id.bt_SDA_map:
+                Intent iMap=new Intent (this,PopMapActivity.class);
+                startActivity(iMap);
+                break;
         }
 
     }
@@ -191,8 +210,8 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case BitalinoCommunicationService.MSG_SEND_FRAME:
-                    Bundle b =msg.getData();
-                    final BITalinoFrame frame=b.getParcelable("Frame");
+                    Bundle bf =msg.getData();
+                    BITalinoFrame frame=bf.getParcelable("Frame");
                     appendData(frame);
 
                     break;
@@ -211,7 +230,12 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
                     break;
                 case BitalinoCommunicationService.MSG_SEND_CONNECTION_ON:
                     progressDialogConnecting.dismiss();
-
+                    break;
+                case BitalinoCommunicationService.MSG_SEND_LOCATION:
+                    Bundle bl=msg.getData();
+                    Location location=bl.getParcelable("Location");
+                    locations.add(location);
+                    break;
                 default:
                     super.handleMessage(msg);
 
@@ -343,7 +367,7 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
                             @TargetApi(Build.VERSION_CODES.M)
                             @Override
                             public void onDismiss(DialogInterface dialogInterface) {
-                                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 2);
+                                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 103);
                             }
                         });
                 builder.show();
@@ -355,7 +379,7 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         switch (requestCode) {
-            case 2:
+            case 103:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.d("MainMenuActivity", "Write external permission granted");
                 } else {

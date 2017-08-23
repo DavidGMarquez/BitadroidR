@@ -11,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -36,6 +37,7 @@ import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
 import com.polito.cesarldm.tfg_bitadroidbeta.services.BitalinoCommunicationService;
 import com.polito.cesarldm.tfg_bitadroidbeta.services.BitalinoDataService;
+import com.polito.cesarldm.tfg_bitadroidbeta.services.GPSService;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.ChannelConfiguration;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.DFTManager;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.FrameTransferFunction;
@@ -54,10 +56,11 @@ import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 public class ShowSingleDataActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
     static final String TAG="SHOW DATA ACTIVITY";
     //UI
-    Button btnStart, btnStop;
+    Button btnStart, btnStop,btnMap;
     SeekBar sbUpTh;
     ArrayList<BITalinoFrame> frames=new ArrayList<BITalinoFrame>();
-    TextView tvMax,tvMin,tvAvg,tvSel,tvSbVal;
+    ArrayList<Location> locations=new ArrayList<Location>();
+    TextView tvMax,tvMin,tvAvg,tvSel,tvSbVal,tvLoc;
     //ArrayList<MPAndroidGraph> graphs=new ArrayList<MPAndroidGraph>();
     MPAndroidGraph mpAndroidGraph;
     //ListView graphList;
@@ -108,10 +111,13 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
             tvAvg=(TextView)findViewById(R.id.tv_SSDA_avg);
             tvSel=(TextView)findViewById(R.id.tv_SSDA_selected);
             tvSbVal=(TextView)findViewById(R.id.tv_SSDA_sb_value);
+            tvLoc=(TextView)findViewById(R.id.tv_SSDA_latlon);
             btnStart = (Button) findViewById(R.id.btn_SSDA_Start);
             btnStart.setOnClickListener(this);
             btnStop = (Button) findViewById(R.id.btn_SSDA_Stop);
             btnStop.setOnClickListener(this);
+            btnMap=(Button) findViewById(R.id.bt_SSDA_map);
+            btnMap.setOnClickListener(this);
             Intent intent = new Intent(this, BitalinoCommunicationService.class);
             intent.putExtra("Device", device);
             intent.putExtra("Config", mConfiguration);
@@ -141,19 +147,6 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
         sbUpTh=(SeekBar)findViewById(R.id.sb_SSDA_aboveTH);
         sbUpTh.setOnSeekBarChangeListener(this);
         sbUpTh.setMax(100);
-        /**ViewGroup.LayoutParams graphParams;
-        View graphsView=findViewById(R.id.ll_SD);
-
-        graphParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,250);
-
-        for(int i=0; i<mConfiguration.getSize();i++){
-            graphs.add(new MPAndroidGraph(this,mConfiguration.activeChannels[i],mConfiguration.activeChannelsNames[i]));
-            LinearLayout graph = (LinearLayout) inflater.inflate(
-                    R.layout.in_ly_graph, null);
-            //graphs.get(i).getGraphView().setOnTouchListener(graphTouchListener);
-            graph.addView(graphs.get(i).getGraphView());
-            ((ViewGroup) graphsView).addView(graph, graphParams);
-        }**/
     }
     @Override
     protected void onStart() {
@@ -203,9 +196,18 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
         switch (v.getId()){
             case R.id.btn_SSDA_Start:
                 startRecording();
+                Intent gpsIntent=new Intent(this,GPSService.class);
+                startService(gpsIntent);
                 break;
             case R.id.btn_SSDA_Stop:
                 stopRecording();
+                Intent gpsIntentStop=new Intent(this,GPSService.class);
+                stopService(gpsIntentStop);
+                break;
+            case R.id.bt_SSDA_map:
+                Intent iMap=new Intent (this,PopMapActivity.class);
+                startActivity(iMap);
+                break;
         }
 
     }
@@ -250,6 +252,13 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
                     break;
                 case BitalinoCommunicationService.MSG_SEND_CONNECTION_ON:
                     progressDialogConnecting.dismiss();
+                    break;
+                case BitalinoCommunicationService.MSG_SEND_LOCATION:
+                    Bundle bl=msg.getData();
+                    Location location=bl.getParcelable("Location");
+                    locations.add(location);
+                    tvLoc.setText("Location: "+location.getLatitude()+" "+location.getLongitude());
+                    break;
                 default:
                     super.handleMessage(msg);
             }
@@ -378,7 +387,7 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
                             @TargetApi(Build.VERSION_CODES.M)
                             @Override
                             public void onDismiss(DialogInterface dialogInterface) {
-                                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 2);
+                                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 103);
                             }
                         });
                 builder.show();
@@ -388,7 +397,7 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         switch (requestCode) {
-            case 2:
+            case 103:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.d("MainMenuActivity", "Write external permission granted");
                 } else {

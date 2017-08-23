@@ -184,7 +184,6 @@ public class CreateConfigActivity extends AppCompatActivity implements RadioGrou
         returnIntentOne.putExtra("result", mChannelConf);
         setResult(SelectDevicesActivity.RESULT_OK, returnIntentOne);
         finish();
-
     }
 
     private void addSelectedChannels() {

@@ -11,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Build;
@@ -39,6 +40,7 @@ import com.polito.cesarldm.tfg_bitadroidbeta.R;
 import com.polito.cesarldm.tfg_bitadroidbeta.beats.Bdac;
 import com.polito.cesarldm.tfg_bitadroidbeta.beats.SampleRate;
 import com.polito.cesarldm.tfg_bitadroidbeta.services.BitalinoCommunicationService;
+import com.polito.cesarldm.tfg_bitadroidbeta.services.GPSService;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.ChannelConfiguration;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.DFTManager;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.FrameTransferFunction;
@@ -54,17 +56,18 @@ import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 public class HeartMonitorActivity extends AppCompatActivity implements View.OnClickListener{
     static final String TAG="SHOW DATA ACTIVITY";
     //UI
-    Button btnStart, btnStop;
+    Button btnStart, btnStop,btnMap;
     SeekBar sbUpTh;
+
     ArrayList<BITalinoFrame> frames=new ArrayList<BITalinoFrame>();
-    TextView bpm;
+    ArrayList<Location> locations=new ArrayList<Location>();
+    TextView tvBpm,tvRR,tvLoc;
     Chronometer chrono;
     static SoundPool soundPool;
     static AudioManager amg;
     static int audio;
     //ArrayList<MPAndroidGraph> graphs=new ArrayList<MPAndroidGraph>();
     MPAndroidGraph mpAndroidGraph;
-    MPAndroidGraph mpAndroidGraphBPM;
     //ListView graphList;
     FrameTransferFunction frameTransFunc;
 
@@ -117,10 +120,13 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
             btnStart.setOnClickListener(this);
             btnStop = (Button) findViewById(R.id.btn_HM_Stop);
             btnStop.setOnClickListener(this);
+            btnMap=(Button) findViewById(R.id.bt_HM_map);
+            btnMap.setOnClickListener(this);
             Intent intent = new Intent(this, BitalinoCommunicationService.class);
             intent.putExtra("Device", device);
             intent.putExtra("Config", mConfiguration);
-            bpm=(TextView)findViewById(R.id.tv_HM_bpm);
+            tvBpm=(TextView)findViewById(R.id.tv_HM_bpm);
+            tvLoc=(TextView)findViewById(R.id.tv_HM_latlon);
             chrono=(Chronometer)findViewById(R.id.chronometer2);
             samplingFrames = (double) mConfiguration.getSampleRate() / mConfiguration.getVisualizationRate();
             numberOfFrames = mConfiguration.getSampleRate();
@@ -160,27 +166,9 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
         RelativeLayout rl=(RelativeLayout)findViewById(R.id.relativeLayout_HM);
         mpAndroidGraph.getGraphView().setLayoutParams(layoutParams);
         rl.addView(mpAndroidGraph.getGraphView());
-        mpAndroidGraphBPM=new MPAndroidGraph(this,mConfiguration,0);
-        RelativeLayout rl2=(RelativeLayout)findViewById(R.id.rl_secondGraph);
-        mpAndroidGraphBPM.getGraphView().setLayoutParams(layoutParams);
-        rl2.addView(mpAndroidGraphBPM.getGraphView());
 
-
-
-        /**ViewGroup.LayoutParams graphParams;
-         View graphsView=findViewById(R.id.ll_SD);
-
-         graphParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,250);
-
-         for(int i=0; i<mConfiguration.getSize();i++){
-         graphs.add(new MPAndroidGraph(this,mConfiguration.activeChannels[i],mConfiguration.activeChannelsNames[i]));
-         LinearLayout graph = (LinearLayout) inflater.inflate(
-         R.layout.in_ly_graph, null);
-         //graphs.get(i).getGraphView().setOnTouchListener(graphTouchListener);
-         graph.addView(graphs.get(i).getGraphView());
-         ((ViewGroup) graphsView).addView(graph, graphParams);
-         }**/
     }
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -230,13 +218,22 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
             case R.id.btn_HM_start:
                 startRecording();
                 startBeatDetection();
+                Intent gpsIntent=new Intent(this,GPSService.class);
+                startService(gpsIntent);
                 chrono.setBase(SystemClock.elapsedRealtime()+timeWhenStopped);
                 chrono.start();
                 break;
             case R.id.btn_HM_Stop:
                 stopRecording();
+                Intent gpsIntentStop=new Intent(this,GPSService.class);
+                stopService(gpsIntentStop);
                 timeWhenStopped=chrono.getBase()- SystemClock.elapsedRealtime();
                 chrono.stop();
+                break;
+            case R.id.bt_HM_map:
+                Intent iMap=new Intent (this,PopMapActivity.class);
+                startActivity(iMap);
+                break;
 
         }
 
@@ -268,6 +265,13 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
                     break;
                 case BitalinoCommunicationService.MSG_SEND_CONNECTION_ON:
                     progressDialogConnecting.dismiss();
+                    break;
+                case BitalinoCommunicationService.MSG_SEND_LOCATION:
+                    Bundle bl=msg.getData();
+                    Location location=bl.getParcelable("Location");
+                    locations.add(location);
+                    tvLoc.setText("Location: "+location.getLatitude()+" "+location.getLongitude());
+                    break;
                 default:
                     super.handleMessage(msg);
             }
@@ -308,9 +312,8 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
 
  public void updateStatistics(float xValue){
      long beats=updateBPMCounter*6;
-     bpm.setText("Bpm: "+beats);
+     tvBpm.setText("Bpm: "+beats);
      Entry e=new Entry(xValue,(float) beats);
-     mpAndroidGraphBPM.addEntry(e);
 
  }
 
@@ -397,7 +400,7 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
                             @TargetApi(Build.VERSION_CODES.M)
                             @Override
                             public void onDismiss(DialogInterface dialogInterface) {
-                                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 2);
+                                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 103);
                             }
                         });
                 builder.show();
@@ -407,7 +410,7 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         switch (requestCode) {
-            case 2:
+            case 103:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.d("MainMenuActivity", "Write external permission granted");
                 } else {
@@ -438,8 +441,6 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
         SampleRate.setSampleRate(mConfiguration.sampleRate);
         bdac.resetBdac();
         beatSampleCount = 0;
-
-
     }
     private void addSampletoBeatDetection(BITalinoFrame frame){
         int position=mConfiguration.recordingChannels[0];

@@ -222,7 +222,7 @@ public class DataManager {
 		FileInputStream fi = null;
 		
 		try {
-			out = new OutputStreamWriter(context.openFileOutput(recordingName + ".txt", Context.MODE_PRIVATE));
+			out = new OutputStreamWriter(context.openFileOutput(recordingName+dateFormat.format(date)+ ".txt", Context.MODE_PRIVATE));
 			out.write("# JSON Text File Format\n");
 			
 			
@@ -321,7 +321,7 @@ public class DataManager {
 		DateFormat dateFormat = DateFormat.getDateTimeInstance();
 		Date date = new Date();
 			String zipFileName = recordingName+"_"+dateFormat.format(date)+ Constants.ZIP_FILE_EXTENTION;
-			String fileName = recordingName + Constants.TEXT_FILE_EXTENTION;
+			String fileName = recordingName+dateFormat.format(date) + Constants.TEXT_FILE_EXTENTION;
 			String directoryAbsolutePath = Environment.getExternalStorageDirectory().toString()+ Constants.APP_DIRECTORY;
 			File root = new File(directoryAbsolutePath);
 			root.mkdirs();

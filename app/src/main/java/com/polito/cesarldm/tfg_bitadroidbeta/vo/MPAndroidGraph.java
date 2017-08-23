@@ -60,7 +60,7 @@ public class MPAndroidGraph implements OnChartValueSelectedListener{
         chart.enableScroll();
         chart.setScaleXEnabled(true);
         chart.setScaleYEnabled(false);
-        chart.zoomToCenter(20f,1f);
+        chart.zoomToCenter(10f,1f);
         chart.setMinimumHeight(ViewGroup.LayoutParams.MATCH_PARENT);
         chart.setDragOffsetX(30);
         this.lineData=new LineData();
@@ -88,13 +88,55 @@ public class MPAndroidGraph implements OnChartValueSelectedListener{
         rightAxis.setEnabled(false);
         chart.setAutoScaleMinMaxEnabled(true);
     }
+    public MPAndroidGraph(Context context,String name,int position){
+        this.entry=new Entry(0,0);
+        this.lineDataSize=0;
+        this.chart=new LineChart(context);
+        this.legendName=name;
+        this.channelNum=position;
+        this.xRange=1000000;
+        chart.getDescription().setEnabled(true);
+        this.viewPortHandler=chart.getViewPortHandler();
+        chart.setOnChartValueSelectedListener(this);
+        //setViewPort();
 
-    private void setViewPort() {
-        this.viewPortHandler.setMinMaxScaleY(1f,1f);
-        this.viewPortHandler.setMinMaxScaleX(90f,1f);
-        this.viewPortHandler.setDragOffsetX(15);
-        ;
+        chart.setTouchEnabled(true);
+        chart.setDragEnabled(true);
+        chart.setScaleEnabled(true);
+        chart.setDrawGridBackground(true);
+        chart.setPinchZoom(false);
+        chart.enableScroll();
+        chart.setScaleXEnabled(true);
+        chart.setScaleYEnabled(false);
+        chart.zoomToCenter(10f,1f);
+        chart.setMinimumHeight(ViewGroup.LayoutParams.MATCH_PARENT);
+        chart.setDragOffsetX(30);
+        this.lineData=new LineData();
+        chart.setData(lineData);
+        chart.setScaleY(1f);
+        Legend l = chart.getLegend();
+        l.setForm(Legend.LegendForm.LINE);
+        l.setTextColor(Color.BLACK);
+        XAxis xl = chart.getXAxis();
+
+        xl.setTextColor(Color.BLACK);
+        xl.setGranularityEnabled(true);
+        xl.setAvoidFirstLastClipping(true);
+        xl.setEnabled(true);
+        xl.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xl.setValueFormatter(new MyAxisValueFormatter());
+        xl.setGranularity(1f);
+        xl.setLabelCount(3);
+        xl.setDrawGridLines(true);
+        YAxis leftAxis = chart.getAxisLeft();
+        leftAxis.setTextColor(Color.BLACK);
+        leftAxis.setDrawGridLines(true);
+        leftAxis.setEnabled(true);
+        YAxis rightAxis = chart.getAxisRight();
+        rightAxis.setEnabled(false);
+        chart.setAutoScaleMinMaxEnabled(true);
     }
+
 
     public void addEntry(Entry entry){
         LineData data = chart.getLineData();
@@ -107,9 +149,7 @@ public class MPAndroidGraph implements OnChartValueSelectedListener{
             }
             set.setHighlightEnabled(true);
             data.addEntry(entry,0);
-
             data.notifyDataChanged();
-
             // let the chart know it's data has changed
             chart.notifyDataSetChanged();
             // limit the number of visible entries

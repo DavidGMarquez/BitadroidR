@@ -314,7 +314,7 @@ public class SelectDevicesActivity extends AppCompatActivity implements View.OnC
                             @TargetApi(Build.VERSION_CODES.M)
                             @Override
                             public void onDismiss(DialogInterface dialogInterface) {
-                                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 2);
+                                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 102);
                             }
                         });
                 builder.show();
@@ -326,7 +326,7 @@ public class SelectDevicesActivity extends AppCompatActivity implements View.OnC
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         switch (requestCode) {
-            case 2:
+            case 102:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.d("MainMenuActivity", "coarse location permission granted");
                 } else {

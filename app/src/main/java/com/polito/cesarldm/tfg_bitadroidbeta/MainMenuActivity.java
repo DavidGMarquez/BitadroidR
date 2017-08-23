@@ -1,18 +1,29 @@
 package com.polito.cesarldm.tfg_bitadroidbeta;
 
+import android.Manifest;
+import android.annotation.TargetApi;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.polito.cesarldm.tfg_bitadroidbeta.services.GPSService;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.ChannelConfiguration;
 
 import info.plux.pluxapi.bitalino.BITalinoDescription;
 import info.plux.pluxapi.bitalino.BITalinoState;
+
+import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 public class MainMenuActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -38,7 +49,13 @@ public class MainMenuActivity extends AppCompatActivity implements View.OnClickL
         btnStartRec.setOnClickListener(this);
         btnShowRec.setOnClickListener(this);
         btnEcg.setOnClickListener(this);
+        runtimeLocationPermissions();
+
+
     }
+
+
+
     @Override
     protected void onStart(){
         super.onStart();
@@ -122,6 +139,85 @@ public class MainMenuActivity extends AppCompatActivity implements View.OnClickL
                 deviceDesc=null;
                 toastMessageShort("No Bitalino device selected");
             }
+        }
+    }
+
+    private void runtimeLocationPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            //Android Marshmallow and above permission check
+            if (this.checkSelfPermission(ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle(getString(R.string.permission_check_dialog_title))
+                        .setMessage(getString(R.string.permission_check_dialog_message))
+                        .setPositiveButton(getString(R.string.permission_check_dialog_positive_button), null)
+                        .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @TargetApi(Build.VERSION_CODES.M)
+                            @Override
+                            public void onDismiss(DialogInterface dialogInterface) {
+                                requestPermissions(new String[]{ACCESS_FINE_LOCATION}, 101);
+                            }
+                        });
+                builder.show();
+            }
+        }if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                //Android Marshmallow and above permission check
+                if (this.checkSelfPermission(ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setTitle(getString(R.string.permission_check_dialog_title))
+                            .setMessage(getString(R.string.permission_check_dialog_message))
+                            .setPositiveButton(getString(R.string.permission_check_dialog_positive_button), null)
+                            .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                @TargetApi(Build.VERSION_CODES.M)
+                                @Override
+                                public void onDismiss(DialogInterface dialogInterface) {
+                                    requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 102);
+                                }
+                            });
+                    builder.show();
+                }
+            }
+
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case 101:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d("MainMenuActivity", "Fine location permission granted");
+                } else {
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                            .setTitle(getString(R.string.permission_denied_dialog_title))
+                            .setMessage(getString(R.string.permission_denied_dialog_message))
+                            .setPositiveButton(getString(R.string.permission_denied_dialog_positive_button), null)
+                            .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                @Override
+                                public void onDismiss(DialogInterface dialogInterface) {
+
+                                }
+                            });
+                    builder.show();
+                }
+                break;
+            case 102:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d("MainMenuActivity", "coarse location permission granted");
+                } else {
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                            .setTitle(getString(R.string.permission_denied_dialog_title))
+                            .setMessage(getString(R.string.permission_denied_dialog_message))
+                            .setPositiveButton(getString(R.string.permission_denied_dialog_positive_button), null)
+                            .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                @Override
+                                public void onDismiss(DialogInterface dialogInterface) {
+
+                                }
+                            });
+                    builder.show();
+                }
+                break;
+
+            default:
+                return;
         }
     }
 

@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -53,6 +54,8 @@ public class BitalinoCommunicationService extends Service {
     public static final int MSG_SEND_FRAME=14;
     public static final int MSG_ERROR=15;
     public static final int MSG_SAVED=16;
+    public static final int MSG_SEND_LOCATION=17;
+
     private boolean isConnected=false;
     private boolean isRecording=false;
     private boolean isRecordMade=false;
@@ -127,7 +130,6 @@ public class BitalinoCommunicationService extends Service {
                 }
         wakeLock.release();
     }
-
 
 class IncomingHandler extends Handler {
     @Override
@@ -320,6 +322,19 @@ class IncomingHandler extends Handler {
             e.printStackTrace();
         }
     }
+    private void sendLocation( Location location) {
+        Bundle b=new Bundle();
+        b.putParcelable("Location", location);
+        Message message = Message.obtain(null, MSG_SEND_LOCATION,0,0);
+        message.setData(b);
+        try {
+            mClient.send(message);
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
 
     private final BroadcastReceiver updateReceiver = new BroadcastReceiver() {
         @Override
@@ -357,6 +372,14 @@ class IncomingHandler extends Handler {
             } else if (Constants.ACTION_MESSAGE_SCAN.equals(action)){
                 BluetoothDevice device = intent.getParcelableExtra(Constants.EXTRA_DEVICE_SCAN);
             }
+            else if ("com.location.Broadcast".equals(action)){
+                Location location=intent.getParcelableExtra("Location");
+               Toast.makeText(getApplicationContext(),"location received by bitaservice",Toast.LENGTH_SHORT).show();
+                //enviar la location a la actividad
+                sendLocation(location);
+                //enviar a archivo de localización
+
+            }
         }
     };
 
@@ -366,6 +389,7 @@ class IncomingHandler extends Handler {
         intentFilter.addAction(Constants.ACTION_DATA_AVAILABLE);
         intentFilter.addAction(Constants.ACTION_COMMAND_REPLY);
         intentFilter.addAction(Constants.ACTION_MESSAGE_SCAN);
+        intentFilter.addAction("com.location.Broadcast");
         return intentFilter;
     }
 
@@ -400,6 +424,13 @@ class IncomingHandler extends Handler {
             public void onBITalinoDataAvailable(BITalinoFrame bitalinoFrame) {
                 Log.d(TAG, "BITalinoFrame: " + bitalinoFrame.toString());
                 if(bitalinoFrame.getSequence()!=-1) {
+                    //Part of code created by @author Carlos Marten Bitadroid APP BiopluxService.java
+                    if (!dataManager.writeFrameToTmpFile(bitalinoFrame, bitalinoFrame.getSequence())) {
+                        sendErrorToActivity(CODE_ERROR_TXT);
+                        killServiceError = true;
+                        stopSelf();
+                    }
+                    //------------------------------------------------------------------------------
                 processFrame(bitalinoFrame);
                 }else {
                     Log.d(TAG, "EMPTY FRAME");

@@ -44,7 +44,23 @@
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".HeartMonitorActivity"></activity>
+        <activity android:name=".HeartMonitorActivity" />
+
+        <service
+            android:name=".services.GPSService"
+            android:enabled="true"
+            android:exported="true" />
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyCnIq6q2rjkvISk2zCzLzA0JSmprs-OQTc" />
+
+        <activity android:name=".PopMapActivity"
+            android:theme="@style/AppTheme.PopupCustomTheme"
+            ></activity>
     </application>
 
 </manifest>
