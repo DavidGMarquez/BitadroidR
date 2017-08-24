@@ -76,6 +76,7 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
     private double samplingCounter = 0;
     private int updateBPMCounter=0;
     private long beatSampleCount=0;
+    private long RRSamplecount=0;
     private long timeWhenStopped=0;
    static private double timeCounter = 0;
     static private float  xValueRatio;
@@ -126,6 +127,7 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
             intent.putExtra("Device", device);
             intent.putExtra("Config", mConfiguration);
             tvBpm=(TextView)findViewById(R.id.tv_HM_bpm);
+            tvRR=(TextView)findViewById(R.id.tv_HM_rr);
             tvLoc=(TextView)findViewById(R.id.tv_HM_latlon);
             chrono=(Chronometer)findViewById(R.id.chronometer2);
             samplingFrames = (double) mConfiguration.getSampleRate() / mConfiguration.getVisualizationRate();
@@ -203,6 +205,7 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
         }
         Intent intent = new Intent(this, BitalinoCommunicationService.class);
         stopService(intent);
+        cleanUpIfEnd();
 
     }
     @Override
@@ -446,6 +449,7 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
         int position=mConfiguration.recordingChannels[0];
         float f = frame.getAnalog(position);
         ++beatSampleCount;
+        ++RRSamplecount;
         delay = bdac.beatDetect((int) f, (int) beatSampleCount);
 
         // If a beat was detected, annotate the beat location
@@ -463,6 +467,15 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
        float x= xValueGenerator((double) time);
         mpAndroidGraph.setHighLightt(x);
         updateBPMCounter++;
+        calculateRRTime();
+
+    }
+
+    private void calculateRRTime() {
+        float tempRR=(float) RRSamplecount/mConfiguration.getSampleRate();
+        tvRR.setText("RR. "+tempRR+"seg");
+        RRSamplecount=0;
+
     }
 
     /**  TOAST METHODS
@@ -480,6 +493,7 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
     static void playSound(int sound){
         soundPool.play(sound,1,1,1,0,1f);
     }
+
     public void cleanUpIfEnd(){
         audio=0;
         soundPool.release();

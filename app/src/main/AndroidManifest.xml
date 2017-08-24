@@ -58,9 +58,10 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyCnIq6q2rjkvISk2zCzLzA0JSmprs-OQTc" />
 
-        <activity android:name=".PopMapActivity"
-            android:theme="@style/AppTheme.PopupCustomTheme"
-            ></activity>
+        <activity
+            android:name=".PopMapActivity"
+            android:theme="@style/AppTheme.PopupCustomTheme" />
+        <activity android:name=".PopBPMRRGraphActivity"></activity>
     </application>
 
 </manifest>
