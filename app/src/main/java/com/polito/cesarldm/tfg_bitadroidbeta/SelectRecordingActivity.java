@@ -1,5 +1,6 @@
 package com.polito.cesarldm.tfg_bitadroidbeta;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
@@ -19,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class SelectRecordingActivity extends AppCompatActivity implements ListView.OnItemLongClickListener {
+public class SelectRecordingActivity extends AppCompatActivity  implements ListView.OnItemLongClickListener {
     private String path= Environment.getExternalStorageDirectory()+Constants.APP_DIRECTORY;
     private RecordingListAdapter listAdapter;
     ArrayList<File> fileList=new ArrayList<File>();

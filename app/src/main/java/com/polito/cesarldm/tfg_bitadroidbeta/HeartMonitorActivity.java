@@ -2,6 +2,7 @@ package com.polito.cesarldm.tfg_bitadroidbeta;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
@@ -56,10 +57,11 @@ import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 public class HeartMonitorActivity extends AppCompatActivity implements View.OnClickListener{
     static final String TAG="SHOW DATA ACTIVITY";
     //UI
-    Button btnStart, btnStop,btnMap;
+    Button btnStart, btnStop,btnMap,btnStats;
     SeekBar sbUpTh;
+    ArrayList<Entry> rrValues=new ArrayList<Entry>();
+    ArrayList<Entry> bpmValues=new ArrayList<Entry>();
 
-    ArrayList<BITalinoFrame> frames=new ArrayList<BITalinoFrame>();
     ArrayList<Location> locations=new ArrayList<Location>();
     TextView tvBpm,tvRR,tvLoc;
     Chronometer chrono;
@@ -123,6 +125,8 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
             btnStop.setOnClickListener(this);
             btnMap=(Button) findViewById(R.id.bt_HM_map);
             btnMap.setOnClickListener(this);
+            btnStats=(Button) findViewById(R.id.btn_HM_Stats);
+            btnStats.setOnClickListener(this);
             Intent intent = new Intent(this, BitalinoCommunicationService.class);
             intent.putExtra("Device", device);
             intent.putExtra("Config", mConfiguration);
@@ -142,6 +146,7 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
             bdac = new Bdac();
         }else {
             Toast.makeText(this, "No device selected ", Toast.LENGTH_SHORT).show();
+            initSound();
             finish();
         }
 
@@ -235,8 +240,20 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
                 break;
             case R.id.bt_HM_map:
                 Intent iMap=new Intent (this,PopMapActivity.class);
+                if(locations!=null) {
+                    iMap.putParcelableArrayListExtra("Locations", locations);
+                }
                 startActivity(iMap);
                 break;
+            case R.id.btn_HM_Stats:
+                if(bpmValues!=null&&rrValues!=null) {
+                    Intent iStats = new Intent(this, PopBPMRRGraphActivity.class);
+                    iStats.putParcelableArrayListExtra("bpm", bpmValues);
+                    iStats.putParcelableArrayListExtra("rr", rrValues);
+                    startActivity(iStats);
+                }
+                break;
+
 
         }
 
@@ -297,14 +314,13 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
                     Entry entry = new Entry(xValue, f);
                     mpAndroidGraph.addEntry(entry);
                     samplingCounter -= samplingFrames;
-                if (dataCheckCount >= mConfiguration.getSampleRate()*10) {
-                    updateStatistics(xValue);
-                    dataCheckCount = 0;
-                    updateBPMCounter=0;
-                }
+            }
+            if (dataCheckCount >= mConfiguration.getSampleRate()*10) {
+                updateStatistics(xValue);
+                dataCheckCount = 0;
+                updateBPMCounter=0;
             }
         }
-
     }
     private float xValueGenerator(double timeCounter) {
         float tempXValue = (float) (timeCounter* 1000) / mConfiguration.getVisualizationRate();
@@ -317,6 +333,9 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
      long beats=updateBPMCounter*6;
      tvBpm.setText("Bpm: "+beats);
      Entry e=new Entry(xValue,(float) beats);
+     bpmValues.add(e);
+
+
 
  }
 
@@ -474,6 +493,10 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
     private void calculateRRTime() {
         float tempRR=(float) RRSamplecount/mConfiguration.getSampleRate();
         tvRR.setText("RR. "+tempRR+"seg");
+        float xValue=xValueGenerator(timeCounter);
+        Entry e=new Entry(xValue,tempRR);
+        rrValues.add(e);
+
         RRSamplecount=0;
 
     }

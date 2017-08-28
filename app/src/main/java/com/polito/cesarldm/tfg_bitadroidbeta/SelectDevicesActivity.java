@@ -2,6 +2,7 @@ package com.polito.cesarldm.tfg_bitadroidbeta;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -45,7 +46,7 @@ import info.plux.pluxapi.bitalino.BITalinoState;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 
-public class SelectDevicesActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemClickListener {
+public class SelectDevicesActivity extends AppCompatActivity  implements View.OnClickListener, AdapterView.OnItemClickListener {
 
     //UI Elements
     Button btnRefresh;
@@ -55,6 +56,7 @@ public class SelectDevicesActivity extends AppCompatActivity implements View.OnC
     private Handler mHandler;
     private BTHDeviceScan bthDeviceScan;
     private BITalinoDescription desc;
+    private BITalinoState state;
     //Adapters
     DeviceListAdapter  adapterNew;
     private int positionSelected;
@@ -75,20 +77,22 @@ public class SelectDevicesActivity extends AppCompatActivity implements View.OnC
                 case BitalinoCommunicationService.MSG_SEND_DESC:
                     Bundle b1 = msg.getData();
                     desc = b1.getParcelable("Desc");
-                    alertDialogCheckBitalino.show();
-                    if(desc.isBITalino2()){
-                        alertDialogCheckBitalino.show();
-                    }
+                    requestState();
+
                     break;
                 case BitalinoCommunicationService.MSG_SEND_STATE:
                     Bundle b2 = msg.getData();
-                    final BITalinoState state = b2.getParcelable("State");
+                    state = b2.getParcelable("State");
+                    if(desc.isBITalino2()){
+                        alertDialogCheckBitalino.show();
+                    }
 
 
                     break;
                 case BitalinoCommunicationService.MSG_SEND_CONNECTION_ON:
                     prgDialogCheckBitalino.dismiss();
                     requestDesc();
+
 
                     break;
                 case BitalinoCommunicationService.MSG_SEND_CONNECTION_OFF:
@@ -97,6 +101,15 @@ public class SelectDevicesActivity extends AppCompatActivity implements View.OnC
                     break;
                 default:
                     super.handleMessage(msg);
+                case BitalinoCommunicationService.MSG_SEND_NOTICE:
+                    Bundle b3=msg.getData();
+                    String s=b3.getString("Notice");
+                    toastMessageShort(s);
+                    if(desc.isBITalino2()){
+                        alertDialogCheckBitalino.show();
+                    }
+
+                    break;
 
             }
         }
@@ -133,6 +146,9 @@ public class SelectDevicesActivity extends AppCompatActivity implements View.OnC
         Intent returnIntentTwo = new Intent();
         returnIntentTwo.putExtra("result", deviceNew);
         returnIntentTwo.putExtra("Desc",desc);
+        if(state!=null) {
+            returnIntentTwo.putExtra("State", state);
+        }
         setResult(SelectDevicesActivity.RESULT_OK, returnIntentTwo);
         //this.unbindService(mConnection);
         this.finish();
@@ -161,7 +177,11 @@ public class SelectDevicesActivity extends AppCompatActivity implements View.OnC
     private void alertDialogInitiate() {
         alertDialogCheckBitalino=new AlertDialog.Builder(SelectDevicesActivity.this).create();
         alertDialogCheckBitalino.setTitle("Selected Device");
-        alertDialogCheckBitalino.setMessage("Device active and in range");
+        if(desc!=null){
+            alertDialogCheckBitalino.setMessage("Bitalino device version "+desc.getFwVersion()+"/nactive and in range");
+        }else {
+            alertDialogCheckBitalino.setMessage("Device active and in range");
+        }
         alertDialogCheckBitalino.setButton("OK",new DialogInterface.OnClickListener(){
             public void onClick(DialogInterface dialog,int which){
                 returnDeviceBitalinoDescription();

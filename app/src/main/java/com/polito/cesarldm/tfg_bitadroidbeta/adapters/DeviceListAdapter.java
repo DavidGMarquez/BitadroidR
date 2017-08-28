@@ -6,11 +6,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.polito.cesarldm.tfg_bitadroidbeta.R;
 
 import java.util.ArrayList;
+
+import static android.R.drawable.stat_sys_data_bluetooth;
 
 /**
  * Created by CesarLdM on 19/5/17.
@@ -67,9 +70,12 @@ public class DeviceListAdapter extends BaseAdapter{
         //initialize views
         holder.deviceName= (TextView) convertView.findViewById(R.id.tv_BDLI_name);
         holder.deviceAddress=(TextView) convertView.findViewById(R.id.tv_BDLI_address);
+        holder.imageView=(ImageView)convertView.findViewById(R.id.iv_BDLI_image);
         //assign views data
         holder.deviceName.setText(devices.get(position).getName());
         holder.deviceAddress.setText(devices.get(position).getAddress());
+        holder.imageView.setImageResource(stat_sys_data_bluetooth);
+
         //add a CONNECTED/DISCONECTED INDICATOR
         return convertView;
     }
@@ -79,6 +85,6 @@ public class DeviceListAdapter extends BaseAdapter{
     static class ViewHolder{
         TextView deviceName;
         TextView deviceAddress;
-
+        ImageView imageView;
     }
 }

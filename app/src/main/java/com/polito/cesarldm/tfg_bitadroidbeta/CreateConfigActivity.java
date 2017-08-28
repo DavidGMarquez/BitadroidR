@@ -1,5 +1,8 @@
 package com.polito.cesarldm.tfg_bitadroidbeta;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -35,6 +38,7 @@ public class CreateConfigActivity extends AppCompatActivity implements RadioGrou
     Spinner sp1,sp2,sp3,sp4,sp5,sp6;
     int sampleRate=10;
     int visualizationRate;
+    private AlertDialog alertDialogCheckBitalino;
     ChannelConfiguration mChannelConf;
     ArrayList<Integer> channelsToShow=new ArrayList<Integer>();
     ArrayList<Integer> channelsSelected=new ArrayList<Integer>();
@@ -55,6 +59,27 @@ public class CreateConfigActivity extends AppCompatActivity implements RadioGrou
         btnDone=(Button) findViewById(R.id.btn_CC_done);
         btnDone.setOnClickListener(this);
         etConfigName=(EditText)findViewById(R.id.et_CC_name);
+        alertDialogInitiate();
+
+
+    }
+    private void alertDialogInitiate() {
+        alertDialogCheckBitalino=new AlertDialog.Builder(CreateConfigActivity.this).create();
+        alertDialogCheckBitalino.setTitle("Warning");
+        alertDialogCheckBitalino.setMessage("Some devices may suffer from performance issues using " +
+                "the selected configuration. Do you want to set the visualization rate to 10Hz?");
+        alertDialogCheckBitalino.setButton("YES",new DialogInterface.OnClickListener(){
+            public void onClick(DialogInterface dialog,int which){
+                mChannelConf.setVisulizationRate(10);
+                endActivity();
+            }
+        });
+        alertDialogCheckBitalino.setButton2("NO",new DialogInterface.OnClickListener(){
+            public void onClick(DialogInterface dialog,int which){
+                endActivity();
+
+            }
+        });
 
     }
 
@@ -179,6 +204,22 @@ public class CreateConfigActivity extends AppCompatActivity implements RadioGrou
         shownNames=channelsToShowNames.toArray(new String[0]);
         String tempName=etConfigName.getText().toString();
         mChannelConf=new ChannelConfiguration(tempName,analogChannels,shownChannels,sampleRate,analogNames,shownNames);
+        noticeUser(mChannelConf);
+
+    }
+
+
+    private void noticeUser(ChannelConfiguration mConfig) {
+        if(mConfig.getVisualizationRate()==100 && mConfig.getRecordingChannels().length>=3){
+            alertDialogCheckBitalino.show();
+
+        }else{
+            endActivity();
+        }
+
+    }
+
+    private void endActivity() {
         JsonManager jsonManager=new JsonManager(this,mChannelConf);
         Intent returnIntentOne = new Intent();
         returnIntentOne.putExtra("result", mChannelConf);

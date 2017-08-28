@@ -2,12 +2,14 @@ package com.polito.cesarldm.tfg_bitadroidbeta;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,10 +27,11 @@ import info.plux.pluxapi.bitalino.BITalinoState;
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
-public class MainMenuActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainMenuActivity extends AppCompatActivity  implements View.OnClickListener{
 
     //UI Elements
-    Button btnScanDev,btnStartRec,btnShowRec,btnEcg;
+    Button btnStartRec,btnShowRec,btnEcg;
+    FloatingActionButton btnScanDev;
     TextView tvDeviceName,tvDeviceMac;
     //Deice selected by user
     private BluetoothDevice device;
@@ -43,7 +46,7 @@ public class MainMenuActivity extends AppCompatActivity implements View.OnClickL
         tvDeviceMac=(TextView)findViewById(R.id.tv_MM_mac);
         btnStartRec=(Button) findViewById(R.id.btn_MM_start_recordings);
         btnShowRec=(Button) findViewById(R.id.btn_MM_show_recordings);
-        btnScanDev=(Button) findViewById(R.id.btn_MM_scan);
+        btnScanDev=(FloatingActionButton) findViewById(R.id.btn_MM_scan);
         btnEcg=(Button) findViewById(R.id.btn_MM_ECG);
         btnScanDev.setOnClickListener(this);
         btnStartRec.setOnClickListener(this);
@@ -131,6 +134,11 @@ public class MainMenuActivity extends AppCompatActivity implements View.OnClickL
                 Bundle b=data.getExtras();
                 device=b.getParcelable("result");
                 deviceDesc=b.getParcelable("Desc");
+                toastMessageLong(deviceDesc.toString());
+                if(data.hasExtra("State")){
+                    deviceState=b.getParcelable("State");
+                    toastMessageLong(deviceState.toString());
+                }
                 //connect
                 toastMessageShort(device.getName() + ", MAC= " + device.getAddress());
             }

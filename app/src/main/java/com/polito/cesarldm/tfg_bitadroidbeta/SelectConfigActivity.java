@@ -1,5 +1,6 @@
 package com.polito.cesarldm.tfg_bitadroidbeta;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;

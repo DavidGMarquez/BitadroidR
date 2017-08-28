@@ -61,7 +61,11 @@
         <activity
             android:name=".PopMapActivity"
             android:theme="@style/AppTheme.PopupCustomTheme" />
-        <activity android:name=".PopBPMRRGraphActivity"></activity>
+        <activity android:name=".PopBPMRRGraphActivity"
+            android:theme="@style/AppTheme.PopupCustomTheme">
+
+        </activity>
+
     </application>
 
 </manifest>

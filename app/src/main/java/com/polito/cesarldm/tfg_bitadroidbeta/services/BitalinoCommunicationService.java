@@ -168,6 +168,7 @@ class IncomingHandler extends Handler {
                 }else{
                     requestState();
                     Toast.makeText(getApplicationContext(),"State not available",Toast.LENGTH_SHORT).show();
+                    sendNoticeToUser("State not available");
                 }
 
                 break;

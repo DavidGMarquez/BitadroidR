@@ -2,6 +2,7 @@ package com.polito.cesarldm.tfg_bitadroidbeta;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
@@ -46,7 +47,7 @@ import info.plux.pluxapi.bitalino.BITalinoFrame;
 
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
-public class ShowDataActivity extends AppCompatActivity implements View.OnClickListener {
+public class ShowDataActivity extends AppCompatActivity  implements View.OnClickListener {
 
     static final String TAG="SHOW DATA ACTIVITY";
     //UI
@@ -57,14 +58,11 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
     ScrollView scrollView;
     //ListView graphList;
     FrameTransferFunction frameTransFunc;
-
-
     private double samplingFrames;
     private double samplingCounter = 0;
     private double timeCounter = 0;
     float xValue=0;
     private int numberOfFrames;
-
     BluetoothDevice device;
     ChannelConfiguration mConfiguration;
     boolean mBound;
@@ -125,22 +123,21 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
     private void setActivityLayout() {
         //ScrollView sc=(ScrollView)findViewById(R.id.sc_SD);
         LinearLayout ll=(LinearLayout)findViewById(R.id.ll_SD);
-
         //sc.addView(ll);
         LayoutParams graphParams,relativeParams;
        // View graphsView=findViewById(R.id.ll_SD);
         graphParams = new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT);
-        relativeParams=new LayoutParams(LayoutParams.MATCH_PARENT,250);
+        relativeParams=new LayoutParams(LayoutParams.MATCH_PARENT,300);
         for(int i=0; i<mConfiguration.getSize();i++){
             graphs.add(new MPAndroidGraph(this,mConfiguration,i));
                     //mConfiguration.activeChannels[i],mConfiguration.activeChannelsNames[i]));
             RelativeLayout graph = (RelativeLayout) inflater.inflate(
                     R.layout.graph_layout, null);
-
+            ll.addView(graph,graphParams);
             //graphs.get(i).getGraphView().setOnTouchListener(graphTouchListener);
             graph.addView(graphs.get(i).getGraphView(),relativeParams);
             //((ViewGroup)graphsView).addView(graph, graphParams);
-            ll.addView(graph,graphParams);
+
         }
     }
 
@@ -182,8 +179,6 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
         super.onBackPressed();
         this.finish();
     }
-
-
     @Override
     public void onClick(View v) {
         switch (v.getId()){
@@ -199,10 +194,12 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
                 break;
             case R.id.bt_SDA_map:
                 Intent iMap=new Intent (this,PopMapActivity.class);
+                if(locations!=null) {
+                    iMap.putParcelableArrayListExtra("Locations", locations);
+                }
                 startActivity(iMap);
                 break;
         }
-
     }
 
     class IncomingHandler extends Handler {
@@ -238,13 +235,10 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
                     break;
                 default:
                     super.handleMessage(msg);
-
             }
         }
     }
-
     private void appendData(BITalinoFrame frame) {
-
         if (samplingCounter++ >= samplingFrames) {
             //float[] conVal=frameTransFunc.getConvertedValues(frame);
             // calculates x value of graphs
@@ -259,15 +253,10 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
                         Entry entry = new Entry(xValue, f);
                         graphs.get(i).addEntry(entry);
                     }
-
                 }
             }
             samplingCounter -= samplingFrames;
-
         }
-
-
-
     }
     private boolean isViewVisible(View view) {
         Rect scrollBounds = new Rect();
@@ -374,7 +363,6 @@ public class ShowDataActivity extends AppCompatActivity implements View.OnClickL
             }
         }
     }
-
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {

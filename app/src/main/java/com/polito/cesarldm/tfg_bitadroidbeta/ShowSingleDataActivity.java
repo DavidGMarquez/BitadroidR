@@ -2,6 +2,7 @@ package com.polito.cesarldm.tfg_bitadroidbeta;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
@@ -206,6 +207,9 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
                 break;
             case R.id.bt_SSDA_map:
                 Intent iMap=new Intent (this,PopMapActivity.class);
+                if(locations!=null) {
+                    iMap.putParcelableArrayListExtra("Locations", locations);
+                }
                 startActivity(iMap);
                 break;
         }
