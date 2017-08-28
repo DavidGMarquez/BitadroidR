@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,7 +33,8 @@ public class MainMenuActivity extends AppCompatActivity  implements View.OnClick
     //UI Elements
     Button btnStartRec,btnShowRec,btnEcg;
     FloatingActionButton btnScanDev;
-    TextView tvDeviceName,tvDeviceMac;
+    TextView tvDeviceName,tvDeviceMac,tvBattery;
+    ImageView ivBitalino,ivBattery,ivLogo;
     //Deice selected by user
     private BluetoothDevice device;
     private BITalinoState deviceState;
@@ -44,6 +46,10 @@ public class MainMenuActivity extends AppCompatActivity  implements View.OnClick
         setContentView(R.layout.activity_main_menu);
         tvDeviceName=(TextView)findViewById(R.id.tv_MM_name);
         tvDeviceMac=(TextView)findViewById(R.id.tv_MM_mac);
+        tvBattery=(TextView)findViewById(R.id.tv_battery_info);
+        ivBitalino=(ImageView)findViewById(R.id.imageViewbitalino);
+        ivBattery=(ImageView)findViewById(R.id.imageViewBattery);
+        ivLogo=(ImageView)findViewById(R.id.imageViewBitaText);
         btnStartRec=(Button) findViewById(R.id.btn_MM_start_recordings);
         btnShowRec=(Button) findViewById(R.id.btn_MM_show_recordings);
         btnScanDev=(FloatingActionButton) findViewById(R.id.btn_MM_scan);
@@ -53,17 +59,12 @@ public class MainMenuActivity extends AppCompatActivity  implements View.OnClick
         btnShowRec.setOnClickListener(this);
         btnEcg.setOnClickListener(this);
         runtimeLocationPermissions();
-
-
     }
-
-
 
     @Override
     protected void onStart(){
         super.onStart();
-        tvDeviceName.setText("Device not selected");
-        tvDeviceMac.setText("MAC: 00:00:00:00:00:00");
+
 
     }
 
@@ -71,8 +72,8 @@ public class MainMenuActivity extends AppCompatActivity  implements View.OnClick
     protected void onResume(){
         super.onResume();
         if(device!=null){
-            tvDeviceName.setText("NAME: "+device.getName());
-            tvDeviceMac.setText("MAC: "+device.getAddress());
+            tvDeviceName.setText(device.getName());
+            tvDeviceMac.setText(device.getAddress());
 
         }
 
@@ -131,13 +132,20 @@ public class MainMenuActivity extends AppCompatActivity  implements View.OnClick
 
         if (requestCode == 1) {
             if(resultCode == SelectDevicesActivity.RESULT_OK){
+                ivLogo.setImageResource(R.drawable.bitalogo);
                 Bundle b=data.getExtras();
                 device=b.getParcelable("result");
                 deviceDesc=b.getParcelable("Desc");
+                if(deviceDesc.isBITalino2()){
+                    ivBitalino.setImageResource(R.drawable.bitalinoblank470_327);
+                }
                 toastMessageLong(deviceDesc.toString());
                 if(data.hasExtra("State")){
                     deviceState=b.getParcelable("State");
+                    displayBatteryInfo(deviceState.getBattery());
                     toastMessageLong(deviceState.toString());
+                }else{
+                    ivBattery.setImageResource(R.drawable.ic_battery_unknown);
                 }
                 //connect
                 toastMessageShort(device.getName() + ", MAC= " + device.getAddress());
@@ -148,6 +156,20 @@ public class MainMenuActivity extends AppCompatActivity  implements View.OnClick
                 toastMessageShort("No Bitalino device selected");
             }
         }
+    }
+
+    private void displayBatteryInfo(int battery) {
+        int currentBat=battery/10;
+        if(battery<=200){
+           ivBattery.setImageResource(R.drawable.ic_battery_20);
+        }else if(battery<=500){
+            ivBattery.setImageResource(R.drawable.ic_battery_50);
+        }else if(battery<=800){
+            ivBattery.setImageResource(R.drawable.ic_battery_80);
+        }else{
+            ivBattery.setImageResource(R.drawable.ic_battery_100);
+        }
+            tvBattery.setText(currentBat+"%");
     }
 
     private void runtimeLocationPermissions() {
