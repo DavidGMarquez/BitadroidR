@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.polito.cesarldm.tfg_bitadroidbeta.SelectConfigActivity">
+    tools:context="com.polito.cesarldm.tfg_bitadroidbeta.SelectConfigActivity"
+    android:background="@color/colorBackground">
 
     <Button
         android:id="@+id/btn_SC_new_conf"
@@ -27,10 +28,7 @@
         android:id="@+id/lv_SC"
         android:layout_width="356dp"
         android:layout_height="423dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginTop="8dp"
+       android:layout_margin="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"

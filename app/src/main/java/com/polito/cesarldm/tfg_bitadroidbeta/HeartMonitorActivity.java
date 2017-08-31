@@ -2,7 +2,6 @@ package com.polito.cesarldm.tfg_bitadroidbeta;
 
 import android.Manifest;
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
@@ -31,19 +30,18 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Chronometer;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.data.Entry;
-import com.polito.cesarldm.tfg_bitadroidbeta.R;
 import com.polito.cesarldm.tfg_bitadroidbeta.beats.Bdac;
 import com.polito.cesarldm.tfg_bitadroidbeta.beats.SampleRate;
 import com.polito.cesarldm.tfg_bitadroidbeta.services.BitalinoCommunicationService;
 import com.polito.cesarldm.tfg_bitadroidbeta.services.GPSService;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.ChannelConfiguration;
-import com.polito.cesarldm.tfg_bitadroidbeta.vo.DFTManager;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.FrameTransferFunction;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.MPAndroidGraph;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.SignalFilter;
@@ -57,11 +55,11 @@ import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 public class HeartMonitorActivity extends AppCompatActivity implements View.OnClickListener{
     static final String TAG="SHOW DATA ACTIVITY";
     //UI
-    Button btnStart, btnStop,btnMap,btnStats;
+    ImageButton btnStart, btnStop,btnEnd,btnStats;
+    Button btnMap;
     SeekBar sbUpTh;
     ArrayList<Entry> rrValues=new ArrayList<Entry>();
     ArrayList<Entry> bpmValues=new ArrayList<Entry>();
-
     ArrayList<Location> locations=new ArrayList<Location>();
     TextView tvBpm,tvRR,tvLoc;
     Chronometer chrono;
@@ -87,7 +85,6 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
     private int delay;
 
     BluetoothDevice device;
-    DFTManager mDftManager;
     static ChannelConfiguration mConfiguration;
     private int dataCheckCount=0;
     boolean mBound;
@@ -101,6 +98,7 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
     float sumForAvg=0;
     private float yMax,yMin,avg;
     private Bdac bdac;
+    private AlertDialog alertDialogCheckEnd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,13 +117,15 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
             initSound();
             device = getIntent().getParcelableExtra("Device");
             mConfiguration = getIntent().getParcelableExtra("Config");
-            btnStart = (Button) findViewById(R.id.btn_HM_start);
+            btnStart = (ImageButton) findViewById(R.id.btn_HM_start);
             btnStart.setOnClickListener(this);
-            btnStop = (Button) findViewById(R.id.btn_HM_Stop);
+            btnStop = (ImageButton) findViewById(R.id.btn_HM_stop);
             btnStop.setOnClickListener(this);
             btnMap=(Button) findViewById(R.id.bt_HM_map);
             btnMap.setOnClickListener(this);
-            btnStats=(Button) findViewById(R.id.btn_HM_Stats);
+            btnStats=(ImageButton) findViewById(R.id.btn_HM_Stats);
+            btnEnd = (ImageButton) findViewById(R.id.btn_HM_end);
+            btnEnd.setOnClickListener(this);
             btnStats.setOnClickListener(this);
             Intent intent = new Intent(this, BitalinoCommunicationService.class);
             intent.putExtra("Device", device);
@@ -133,16 +133,16 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
             tvBpm=(TextView)findViewById(R.id.tv_HM_bpm);
             tvRR=(TextView)findViewById(R.id.tv_HM_rr);
             tvLoc=(TextView)findViewById(R.id.tv_HM_latlon);
-            chrono=(Chronometer)findViewById(R.id.chronometer2);
+            chrono=(Chronometer)findViewById(R.id.chrono_HM);
             samplingFrames = (double) mConfiguration.getSampleRate() / mConfiguration.getVisualizationRate();
             numberOfFrames = mConfiguration.getSampleRate();
             xValueRatio=mConfiguration.getVisualizationRate()/10;
             setActivityLayout();
             startService(intent);
+            alertDialogInitiate();
             progressDialogConnecting=new ProgressDialog(HeartMonitorActivity.this);
             progressDialogConnecting.setMessage("Connecting to Bitalino");
             frameTransFunc=new FrameTransferFunction(mConfiguration);
-            mDftManager=new DFTManager();
             bdac = new Bdac();
         }else {
             Toast.makeText(this, "No device selected ", Toast.LENGTH_SHORT).show();
@@ -175,6 +175,27 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
         rl.addView(mpAndroidGraph.getGraphView());
 
     }
+    private void alertDialogInitiate() {
+        alertDialogCheckEnd=new AlertDialog.Builder(HeartMonitorActivity.this).create();
+        alertDialogCheckEnd.setTitle("Warning");
+        alertDialogCheckEnd.setMessage("Are you sure you want to stop the current recording?");
+        alertDialogCheckEnd.setButton("YES",new DialogInterface.OnClickListener(){
+            public void onClick(DialogInterface dialog,int which){
+                endActivity();
+
+            }
+        });
+        alertDialogCheckEnd.setButton2("NO",new DialogInterface.OnClickListener(){
+            public void onClick(DialogInterface dialog,int which){
+
+
+            }
+        });
+        alertDialogCheckEnd.setIcon(R.drawable.ic_warning_notice);
+
+    }
+
+
 
     @Override
     protected void onStart() {
@@ -216,8 +237,12 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
     @Override
     public void onBackPressed(){
         super.onBackPressed();
+        alertDialogCheckEnd.show();
+    }
+    private void endActivity() {
         this.finish();
     }
+
 
 
     @Override
@@ -231,12 +256,15 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
                 chrono.setBase(SystemClock.elapsedRealtime()+timeWhenStopped);
                 chrono.start();
                 break;
-            case R.id.btn_HM_Stop:
+            case R.id.btn_HM_stop:
                 stopRecording();
                 Intent gpsIntentStop=new Intent(this,GPSService.class);
                 stopService(gpsIntentStop);
                 timeWhenStopped=chrono.getBase()- SystemClock.elapsedRealtime();
                 chrono.stop();
+                break;
+            case R.id.btn_HM_end:
+                alertDialogCheckEnd.show();
                 break;
             case R.id.bt_HM_map:
                 Intent iMap=new Intent (this,PopMapActivity.class);

@@ -23,6 +23,7 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.provider.SyncStateContract;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -49,7 +50,7 @@ import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 public class SelectDevicesActivity extends AppCompatActivity  implements View.OnClickListener, AdapterView.OnItemClickListener {
 
     //UI Elements
-    Button btnRefresh;
+    FloatingActionButton btnRefresh;
     ListView lvNew;
     //Bluetooth
     private BluetoothAdapter mBluetoothAdapter;
@@ -115,32 +116,6 @@ public class SelectDevicesActivity extends AppCompatActivity  implements View.On
         }
     }
 
-   /* class IncomingHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case BitalinoDataService.MSG_SEND_STATE:
-                    Bundle b =msg.getData();
-                    final BITalinoState state=b.getParcelable("State");
-                    alertDialogCheckBitalino.show();
-                    ReturnDeviceBitalinoState(state);
-                    break;
-                case BitalinoDataService.MSG_CONNECTED:
-                    prgDialogCheckBitalino.dismiss();
-
-                    break;
-                case BitalinoDataService.MSG_STOP:
-                    prgDialogCheckBitalino.dismiss();
-                    unbindService(mConnection);
-                    toastMessageLong("Not Bitalino");
-                    break;
-                default:
-                    super.handleMessage(msg);
-
-            }
-        }
-    }*/
-
     private void returnDeviceBitalinoDescription() {
         final BluetoothDevice deviceNew=adapterNew.getItem(positionSelected);
         Intent returnIntentTwo = new Intent();
@@ -149,8 +124,9 @@ public class SelectDevicesActivity extends AppCompatActivity  implements View.On
         if(state!=null) {
             returnIntentTwo.putExtra("State", state);
         }
+        overridePendingTransition(R.animator.lefttorigth,R.animator.rigthtoleft);
         setResult(SelectDevicesActivity.RESULT_OK, returnIntentTwo);
-        //this.unbindService(mConnection);
+
         this.finish();
     }
 
@@ -187,6 +163,7 @@ public class SelectDevicesActivity extends AppCompatActivity  implements View.On
                 returnDeviceBitalinoDescription();
             }
         });
+        alertDialogCheckBitalino.setIcon(R.drawable.ic_check);
 
     }
 
@@ -233,13 +210,14 @@ public class SelectDevicesActivity extends AppCompatActivity  implements View.On
     @Override
     public void onBackPressed(){
         super.onBackPressed();
+        overridePendingTransition(R.animator.lefttorigth,R.animator.rigthtoleft);
         this.finish();
     }
     /**
      * METHODS
      */
     private void setUI() {
-        btnRefresh=(Button)findViewById(R.id.btn_SD_refresh);
+        btnRefresh=(FloatingActionButton)findViewById(R.id.btn_SD_refresh);
         lvNew=(ListView)findViewById(R.id.lv_SD_new);
         btnRefresh.setOnClickListener(this);
         lvNew.setOnItemClickListener(this);

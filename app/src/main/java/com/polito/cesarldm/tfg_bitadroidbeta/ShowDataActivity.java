@@ -20,6 +20,8 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.os.SystemClock;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -29,6 +31,9 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.Chronometer;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
@@ -51,7 +56,8 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
 
     static final String TAG="SHOW DATA ACTIVITY";
     //UI
-    Button btnStart, btnStop,btnMap;
+    Button btnMap;
+    ImageButton btnStart, btnStop,btnEnd;
     ArrayList<BITalinoFrame> frames=new ArrayList<BITalinoFrame>();
     ArrayList<MPAndroidGraph> graphs=new ArrayList<MPAndroidGraph>();
     ArrayList<Location> locations=new ArrayList<Location>();
@@ -63,6 +69,7 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
     private double timeCounter = 0;
     float xValue=0;
     private int numberOfFrames;
+    private long timeWhenStopped=0;
     BluetoothDevice device;
     ChannelConfiguration mConfiguration;
     boolean mBound;
@@ -72,6 +79,8 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
     Messenger mService = null;
     private LayoutInflater inflater;
     public ProgressDialog progressDialogConnecting;
+    private AlertDialog alertDialogCheckEnd;
+    Chronometer chrono;
 
 
 
@@ -92,12 +101,15 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
         if(getIntent().getParcelableExtra("Device")!=null) {
             device = getIntent().getParcelableExtra("Device");
             mConfiguration = getIntent().getParcelableExtra("Config");
-            btnStart = (Button) findViewById(R.id.btn_SDA_start);
+            btnStart = (ImageButton) findViewById(R.id.btn_SDA_start);
             btnStart.setOnClickListener(this);
-            btnStop = (Button) findViewById(R.id.btn_SDA_stop);
+            btnStop = (ImageButton) findViewById(R.id.btn_SDA_stop);
             btnStop.setOnClickListener(this);
+            btnEnd = (ImageButton) findViewById(R.id.btn_SDA_end);
+            btnEnd.setOnClickListener(this);
             btnMap=(Button) findViewById(R.id.bt_SDA_map);
             btnMap.setOnClickListener(this);
+            chrono=(Chronometer)findViewById(R.id.chrono_SDA);
             scrollView=(ScrollView)findViewById(R.id.sc_SD);
             Intent intent = new Intent(this, BitalinoCommunicationService.class);
             //Intent intent = new Intent(this, BitalinoDataService.class);
@@ -110,6 +122,7 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
             //*************************************************************************************
             setActivityLayout();
             startService(intent);
+            alertDialogInitiate();
             progressDialogConnecting=new ProgressDialog(ShowDataActivity.this);
             progressDialogConnecting.setMessage("Connecting to Bitalino");
             frameTransFunc=new FrameTransferFunction(mConfiguration);
@@ -118,8 +131,31 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
             finish();
         }
 
+    }
+
+
+    private void alertDialogInitiate() {
+        alertDialogCheckEnd=new AlertDialog.Builder(ShowDataActivity.this).create();
+        alertDialogCheckEnd.setTitle("Warning");
+        alertDialogCheckEnd.setMessage("Are you sure you want to stop the current recording?");
+        alertDialogCheckEnd.setButton("YES",new DialogInterface.OnClickListener(){
+            public void onClick(DialogInterface dialog,int which){
+            endActivity();
+
+            }
+        });
+        alertDialogCheckEnd.setButton2("NO",new DialogInterface.OnClickListener(){
+            public void onClick(DialogInterface dialog,int which){
+
+
+            }
+        });
+        alertDialogCheckEnd.setIcon(R.drawable.ic_warning_notice);
 
     }
+
+
+
     private void setActivityLayout() {
         //ScrollView sc=(ScrollView)findViewById(R.id.sc_SD);
         LinearLayout ll=(LinearLayout)findViewById(R.id.ll_SD);
@@ -127,12 +163,14 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
         LayoutParams graphParams,relativeParams;
        // View graphsView=findViewById(R.id.ll_SD);
         graphParams = new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT);
+
         relativeParams=new LayoutParams(LayoutParams.MATCH_PARENT,300);
         for(int i=0; i<mConfiguration.getSize();i++){
             graphs.add(new MPAndroidGraph(this,mConfiguration,i));
                     //mConfiguration.activeChannels[i],mConfiguration.activeChannelsNames[i]));
             RelativeLayout graph = (RelativeLayout) inflater.inflate(
                     R.layout.graph_layout, null);
+
             ll.addView(graph,graphParams);
             //graphs.get(i).getGraphView().setOnTouchListener(graphTouchListener);
             graph.addView(graphs.get(i).getGraphView(),relativeParams);
@@ -177,6 +215,9 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
     @Override
     public void onBackPressed(){
         super.onBackPressed();
+        alertDialogCheckEnd.show();
+    }
+    private void endActivity() {
         this.finish();
     }
     @Override
@@ -184,6 +225,8 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
         switch (v.getId()){
             case R.id.btn_SDA_start:
                 startRecording();
+                chrono.setBase(SystemClock.elapsedRealtime()+timeWhenStopped);
+                chrono.start();
                 Intent gpsIntent=new Intent(this,GPSService.class);
                 startService(gpsIntent);
                 break;
@@ -191,6 +234,14 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
                 stopRecording();
                 Intent gpsIntentStop=new Intent(this,GPSService.class);
                 stopService(gpsIntentStop);
+                timeWhenStopped=chrono.getBase()- SystemClock.elapsedRealtime();
+                chrono.stop();
+                break;
+            case R.id.btn_SDA_end:
+                Intent gpsIntentEnd=new Intent(this,GPSService.class);
+                stopService(gpsIntentEnd);
+                alertDialogCheckEnd.show();
+
                 break;
             case R.id.bt_SDA_map:
                 Intent iMap=new Intent (this,PopMapActivity.class);

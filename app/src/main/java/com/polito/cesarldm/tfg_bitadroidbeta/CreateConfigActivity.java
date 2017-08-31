@@ -80,6 +80,7 @@ public class CreateConfigActivity extends AppCompatActivity implements RadioGrou
 
             }
         });
+        alertDialogCheckBitalino.setIcon(R.drawable.ic_warning_notice);
 
     }
 

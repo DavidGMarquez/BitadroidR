@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.polito.cesarldm.tfg_bitadroidbeta.CreateConfigActivity">
+    tools:context="com.polito.cesarldm.tfg_bitadroidbeta.CreateConfigActivity"
+    android:background="@color/colorBackground">
 
     <Switch
         android:id="@+id/switch1"

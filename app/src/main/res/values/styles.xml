@@ -2,7 +2,7 @@
 
     <!-- Base application theme. -->
    <!-- <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">-->
-   <style name="AppTheme" parent="Theme.AppCompat">
+   <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
@@ -20,6 +20,7 @@
     <style name="AppTheme.PopupCustomTheme">
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowCloseOnTouchOutside">true</item>
+        <item name="windowActionBar">false</item>
     </style>
 
 </resources>

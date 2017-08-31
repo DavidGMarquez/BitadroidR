@@ -2,7 +2,6 @@ package com.polito.cesarldm.tfg_bitadroidbeta;
 
 import android.Manifest;
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
@@ -19,7 +18,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.support.v7.app.ActionBar;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,42 +27,40 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.LinearLayout;
+import android.widget.Chronometer;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
 import com.polito.cesarldm.tfg_bitadroidbeta.services.BitalinoCommunicationService;
-import com.polito.cesarldm.tfg_bitadroidbeta.services.BitalinoDataService;
 import com.polito.cesarldm.tfg_bitadroidbeta.services.GPSService;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.ChannelConfiguration;
-import com.polito.cesarldm.tfg_bitadroidbeta.vo.DFTManager;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.FrameTransferFunction;
+import com.polito.cesarldm.tfg_bitadroidbeta.vo.LowPassFilter;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.MPAndroidGraph;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.SignalFilter;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 
-import biz.source_code.dsp.math.Complex;
-import biz.source_code.dsp.transform.Dft;
 import info.plux.pluxapi.bitalino.BITalinoFrame;
 
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
-public class ShowSingleDataActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
+public class ShowSingleDataActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener,View.OnLongClickListener {
     static final String TAG="SHOW DATA ACTIVITY";
     //UI
-    Button btnStart, btnStop,btnMap;
+    ImageButton btnStart, btnStop,btnEnd;
+    Button btnMap;
     SeekBar sbUpTh;
     ArrayList<BITalinoFrame> frames=new ArrayList<BITalinoFrame>();
     ArrayList<Location> locations=new ArrayList<Location>();
     TextView tvMax,tvMin,tvAvg,tvSel,tvSbVal,tvLoc;
     //ArrayList<MPAndroidGraph> graphs=new ArrayList<MPAndroidGraph>();
     MPAndroidGraph mpAndroidGraph;
+    float outPut;
     //ListView graphList;
     FrameTransferFunction frameTransFunc;
 
@@ -74,9 +71,9 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
     private float  xValueRatio;
     float xValue=0;
     private int numberOfFrames;
+    private long timeWhenStopped=0;
 
     BluetoothDevice device;
-    DFTManager mDftManager;
     ChannelConfiguration mConfiguration;
     private int dataCheckCount=0;
     boolean mBound;
@@ -87,8 +84,11 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
     private LayoutInflater inflater;
     public ProgressDialog progressDialogConnecting;
     private SignalFilter mSignalFilter;
+    private LowPassFilter mLowPasFilter;
     float sumForAvg=0;
     private float yMax,yMin,avg;
+    private AlertDialog alertDialogCheckEnd;
+    Chronometer chrono;
 
 
     @Override
@@ -112,10 +112,12 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
             tvAvg=(TextView)findViewById(R.id.tv_SSDA_avg);
             tvSel=(TextView)findViewById(R.id.tv_SSDA_selected);
             tvSbVal=(TextView)findViewById(R.id.tv_SSDA_sb_value);
-            tvLoc=(TextView)findViewById(R.id.tv_SSDA_latlon);
-            btnStart = (Button) findViewById(R.id.btn_SSDA_Start);
+           // tvLoc=(TextView)findViewById(R.id.tv_SSDA_latlon);
+            btnStart =(ImageButton) findViewById(R.id.btn_SSDA_start);
             btnStart.setOnClickListener(this);
-            btnStop = (Button) findViewById(R.id.btn_SSDA_Stop);
+            btnEnd =(ImageButton) findViewById(R.id.btn_SSDA_end);
+            btnEnd.setOnClickListener(this);
+            btnStop =(ImageButton) findViewById(R.id.btn_SSDA_stop);
             btnStop.setOnClickListener(this);
             btnMap=(Button) findViewById(R.id.bt_SSDA_map);
             btnMap.setOnClickListener(this);
@@ -125,8 +127,10 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
             samplingFrames = (double) mConfiguration.getSampleRate() / mConfiguration.getVisualizationRate();
             numberOfFrames = mConfiguration.getSampleRate();
             xValueRatio=mConfiguration.getVisualizationRate()/10;
+            chrono=(Chronometer)findViewById(R.id.chrono_SSDA);
             setActivityLayout();
             startService(intent);
+            alertDialogInitiate();
             progressDialogConnecting=new ProgressDialog(ShowSingleDataActivity.this);
             progressDialogConnecting.setMessage("Connecting to Bitalino");
             frameTransFunc=new FrameTransferFunction(mConfiguration);
@@ -142,13 +146,38 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
         ViewGroup.LayoutParams layoutParams=new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         mpAndroidGraph=new MPAndroidGraph(this,mConfiguration,0);
         RelativeLayout rl=(RelativeLayout)findViewById(R.id.relativeLayout_SSDA);
+        rl.setClickable(true);
+        rl.setLongClickable(true);
+        rl.setOnLongClickListener(this);
+        rl.setOnClickListener(this);
         mpAndroidGraph.getGraphView().setLayoutParams(layoutParams);
         rl.addView(mpAndroidGraph.getGraphView());
         mSignalFilter=new SignalFilter((mpAndroidGraph));
+        mLowPasFilter=new LowPassFilter();
         sbUpTh=(SeekBar)findViewById(R.id.sb_SSDA_aboveTH);
         sbUpTh.setOnSeekBarChangeListener(this);
         sbUpTh.setMax(100);
     }
+    private void alertDialogInitiate() {
+        alertDialogCheckEnd=new AlertDialog.Builder(ShowSingleDataActivity.this).create();
+        alertDialogCheckEnd.setTitle("Warning");
+        alertDialogCheckEnd.setMessage("Are you sure you want to stop the current recording?");
+        alertDialogCheckEnd.setButton("YES",new DialogInterface.OnClickListener(){
+            public void onClick(DialogInterface dialog,int which){
+                endActivity();
+
+            }
+        });
+        alertDialogCheckEnd.setButton2("NO",new DialogInterface.OnClickListener(){
+            public void onClick(DialogInterface dialog,int which){
+
+
+            }
+        });
+        alertDialogCheckEnd.setIcon(R.drawable.ic_warning_notice);
+
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -188,22 +217,34 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
     @Override
     public void onBackPressed(){
         super.onBackPressed();
+        alertDialogCheckEnd.show();
+    }
+    private void endActivity() {
         this.finish();
     }
-
 
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.btn_SSDA_Start:
+            case R.id.btn_SSDA_start:
                 startRecording();
+                chrono.setBase(SystemClock.elapsedRealtime()+timeWhenStopped);
+                chrono.start();
                 Intent gpsIntent=new Intent(this,GPSService.class);
                 startService(gpsIntent);
                 break;
-            case R.id.btn_SSDA_Stop:
+            case R.id.btn_SSDA_stop:
                 stopRecording();
                 Intent gpsIntentStop=new Intent(this,GPSService.class);
                 stopService(gpsIntentStop);
+                timeWhenStopped=chrono.getBase()- SystemClock.elapsedRealtime();
+                chrono.stop();
+                break;
+            case R.id.btn_SSDA_end:
+                Intent gpsIntentEnd=new Intent(this,GPSService.class);
+                stopService(gpsIntentEnd);
+                alertDialogCheckEnd.show();
+                mpAndroidGraph.saveAsImage();
                 break;
             case R.id.bt_SSDA_map:
                 Intent iMap=new Intent (this,PopMapActivity.class);
@@ -212,14 +253,32 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
                 }
                 startActivity(iMap);
                 break;
+            case R.id.relativeLayout_SSDA:
+                tvSel.setText("Y: "+Float.toString(mpAndroidGraph.getSelectedValue().getY()));
+                break;
         }
 
+    }
+    @Override
+    public boolean onLongClick(View v) {
+        mpAndroidGraph.saveAsImage();
+        return false;
     }
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        mSignalFilter.setUpThreshold(progress);
-        tvSbVal.setText(progress+"%");
+        int value;
+        if(progress<=33){
+           value=0;
+       }else if(progress<=66) {
+           value=50;
+       }else if(progress<=100){
+            value=99;
+        }else{
+            value=0;
+        }
+        mLowPasFilter.updateAlpha(value);
+        tvSbVal.setText(value+"%");
     }
 
     @Override
@@ -231,6 +290,7 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
     public void onStopTrackingTouch(SeekBar seekBar) {
 
     }
+
 
     class IncomingHandler extends Handler {
         @Override
@@ -261,7 +321,7 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
                     Bundle bl=msg.getData();
                     Location location=bl.getParcelable("Location");
                     locations.add(location);
-                    tvLoc.setText("Location: "+location.getLatitude()+" "+location.getLongitude());
+                   // tvLoc.setText("Location: "+location.getLatitude()+" "+location.getLongitude());
                     break;
                 default:
                     super.handleMessage(msg);
@@ -275,14 +335,25 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
         if (samplingCounter++ >= samplingFrames) {
             timeCounter++;
             xValue = (float) (timeCounter* 1000) / mConfiguration.getVisualizationRate();
-                    ;
+
             /** if(mSignalFilter.checkFrame(frame.getAnalog(position))) {
              f = frame.getAnalog(position);
              }else{
              f=mSignalFilter.getAvg();
              }**/
             f = frame.getAnalog(position);
-            if (isVisible) {
+            float tempOut=mLowPasFilter.lowPass(f,outPut);
+            outPut=tempOut;
+            if(isVisible) {
+                Entry entry=new Entry(xValue,tempOut);
+                mpAndroidGraph.addEntry(entry);
+            }
+            if (dataCheckCount >= mConfiguration.getVisualizationRate() / 2) {
+                updateStatistics();
+                dataCheckCount = 0;
+            }
+
+         /**  if (isVisible) {
                 if (mSignalFilter.checkFrame(f)) {
                     sumForAvg += f;
                     Entry entry = new Entry(xValue, f);
@@ -296,11 +367,8 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
                     mSignalFilter.updateValues(sumForAvg);
                 }
                 samplingCounter -= samplingFrames;
-                if (dataCheckCount >= mConfiguration.getVisualizationRate() / 2) {
-                    updateStatistics();
-                    dataCheckCount = 0;
-                }
-            }
+
+            }**/
         }
 
     }

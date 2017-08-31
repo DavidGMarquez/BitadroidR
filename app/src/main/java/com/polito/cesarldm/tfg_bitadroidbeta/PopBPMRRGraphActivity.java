@@ -12,7 +12,7 @@ import com.polito.cesarldm.tfg_bitadroidbeta.vo.MPAndroidGraph;
 
 import java.util.ArrayList;
 
-public class PopBPMRRGraphActivity extends AppCompatActivity  {
+public class PopBPMRRGraphActivity extends Activity  {
     MPAndroidGraph mpAndroidGraphBPM,mpAndroidGraphRR;
 
     ArrayList<Entry> rrValues=new ArrayList<Entry>();

@@ -1,7 +1,10 @@
 package com.polito.cesarldm.tfg_bitadroidbeta.vo;
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
@@ -15,6 +18,7 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.github.mikephil.charting.utils.ViewPortHandler;
+import com.polito.cesarldm.tfg_bitadroidbeta.ShowSingleDataActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +28,7 @@ import java.util.regex.Matcher;
  * Created by CesarLdM on 30/6/17.
  */
 
-public class MPAndroidGraph implements OnChartValueSelectedListener{
+public class MPAndroidGraph implements OnChartValueSelectedListener, View.OnLongClickListener{
     private  List<Entry> entries;
     private  Context context;
     private ILineDataSet dataSet;
@@ -35,11 +39,12 @@ public class MPAndroidGraph implements OnChartValueSelectedListener{
     private ChannelConfiguration mConfiguration;
     private int xRange;
     float lineDataSize;
-    private ViewPortHandler viewPortHandler;
+
     private Entry entry;
 
 
     public MPAndroidGraph(Context context, ChannelConfiguration mConfiguration, int position){
+        this.context=context;
         this.entry=new Entry(0,0);
         this.lineDataSize=0;
         this.mConfiguration=mConfiguration;
@@ -48,10 +53,8 @@ public class MPAndroidGraph implements OnChartValueSelectedListener{
         this.channelNum=mConfiguration.recordingChannels[position];
         this.xRange=mConfiguration.getSampleRate()*10000;
         chart.getDescription().setEnabled(true);
-        this.viewPortHandler=chart.getViewPortHandler();
         chart.setOnChartValueSelectedListener(this);
-        //setViewPort();
-
+        chart.setOnLongClickListener(this);
         chart.setTouchEnabled(true);
         chart.setDragEnabled(true);
         chart.setScaleEnabled(true);
@@ -60,7 +63,8 @@ public class MPAndroidGraph implements OnChartValueSelectedListener{
         chart.enableScroll();
         chart.setScaleXEnabled(true);
         chart.setScaleYEnabled(false);
-        chart.zoomToCenter(10f,1f);
+        float f=mConfiguration.getRecordingChannels().length*10;
+        chart.zoomToCenter(f,1f);
         chart.setMinimumHeight(ViewGroup.LayoutParams.MATCH_PARENT);
         chart.setDragOffsetX(30);
         this.lineData=new LineData();
@@ -70,7 +74,6 @@ public class MPAndroidGraph implements OnChartValueSelectedListener{
         l.setForm(Legend.LegendForm.LINE);
         l.setTextColor(Color.BLACK);
         XAxis xl = chart.getXAxis();
-
         xl.setTextColor(Color.BLACK);
         xl.setGranularityEnabled(true);
         xl.setAvoidFirstLastClipping(true);
@@ -87,19 +90,20 @@ public class MPAndroidGraph implements OnChartValueSelectedListener{
         YAxis rightAxis = chart.getAxisRight();
         rightAxis.setEnabled(false);
         chart.setAutoScaleMinMaxEnabled(true);
+        chart.setHardwareAccelerationEnabled(true);
     }
     public MPAndroidGraph(Context context,String name,int position){
+        this.context=context;
         this.entry=new Entry(0,0);
         this.lineDataSize=0;
         this.chart=new LineChart(context);
         this.legendName=name;
         this.channelNum=position;
         this.xRange=1000000;
+        this.lineData=new LineData();
         chart.getDescription().setEnabled(true);
-        this.viewPortHandler=chart.getViewPortHandler();
         chart.setOnChartValueSelectedListener(this);
-        //setViewPort();
-
+        chart.setOnLongClickListener(this);
         chart.setTouchEnabled(true);
         chart.setDragEnabled(true);
         chart.setScaleEnabled(true);
@@ -108,17 +112,13 @@ public class MPAndroidGraph implements OnChartValueSelectedListener{
         chart.enableScroll();
         chart.setScaleXEnabled(true);
         chart.setScaleYEnabled(false);
-        chart.zoomToCenter(10f,1f);
         chart.setMinimumHeight(ViewGroup.LayoutParams.MATCH_PARENT);
-        chart.setDragOffsetX(30);
-        this.lineData=new LineData();
         chart.setData(lineData);
         chart.setScaleY(1f);
         Legend l = chart.getLegend();
         l.setForm(Legend.LegendForm.LINE);
         l.setTextColor(Color.BLACK);
         XAxis xl = chart.getXAxis();
-
         xl.setTextColor(Color.BLACK);
         xl.setGranularityEnabled(true);
         xl.setAvoidFirstLastClipping(true);
@@ -172,7 +172,7 @@ public class MPAndroidGraph implements OnChartValueSelectedListener{
         set.setDrawCircles(false);
         set.setHighlightEnabled(true);
         set.setColor(ColorTemplate.rgb(color));
-        set.setLineWidth(1f);
+        set.setLineWidth(1.5f);
         set.setFillAlpha(65);
         set.setFillColor(ColorTemplate.rgb(color));
         set.setHighLightColor(Color.rgb(244, 117, 117));
@@ -214,6 +214,7 @@ public class MPAndroidGraph implements OnChartValueSelectedListener{
     private void setLineAppearance(LineDataSet set) {
     }
 
+
     public LineChart getGraphView(){
         return this.chart;
     }
@@ -226,7 +227,6 @@ public class MPAndroidGraph implements OnChartValueSelectedListener{
     @Override
     public void onValueSelected(Entry e, Highlight h) {
         this.entry=e;
-
 
     }
 
@@ -242,7 +242,16 @@ public class MPAndroidGraph implements OnChartValueSelectedListener{
         chart.highlightValue(xvalue,0,true);
 
     }
+    public void saveAsImage(){
+        chart.saveToGallery(legendName,50);
+    }
 
 
+    @Override
+    public boolean onLongClick(View v) {
+        chart.saveToGallery(legendName,80);
+        Toast.makeText(this.context,"Snapshot from graph "+this.legendName+", saved",Toast.LENGTH_LONG).show();
+        return false;
+    }
 }
 

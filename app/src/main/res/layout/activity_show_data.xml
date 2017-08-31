@@ -4,110 +4,24 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.polito.cesarldm.tfg_bitadroidbeta.ShowDataActivity">
-
-    <Button
-        android:id="@+id/btn_SDA_start"
-        android:layout_width="70dp"
-        android:layout_height="41dp"
-        android:text="Start"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginBottom="8dp"
-        android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginLeft="8dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintHorizontal_bias="0.026"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp" />
-
-    <Button
-        android:id="@+id/btn_SDA_stop"
-        android:layout_width="70dp"
-        android:layout_height="41dp"
-        android:text="Pause"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginBottom="8dp"
-        android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginLeft="8dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        app:layout_constraintHorizontal_bias="0.261" />
-
-    <Button
-        android:id="@+id/btn_SDA_end"
-        android:layout_width="70dp"
-        android:layout_height="41dp"
-        android:text="Stop"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginBottom="8dp"
-        android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginLeft="8dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        app:layout_constraintTop_toTopOf="@+id/btn_SDA_stop"
-        android:layout_marginTop="8dp"
-        app:layout_constraintVertical_bias="1.0" />
-    <Chronometer
-        android:id="@+id/chronometer2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@+id/sc_SD"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="20dp"
-
-        android:layout_marginTop="8dp"
-        android:format="%s"
-        android:textColorHighlight="@color/colorAccent"
-        android:textSize="20sp"
-        android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_bias="0.629"
-        app:layout_constraintLeft_toRightOf="@+id/btn_SDA_end"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.983" />
-
-    <Button
-        android:id="@+id/bt_SDA_map"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:text="M"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="8dp"
-        app:layout_constraintVertical_bias="0.947"
-        android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginLeft="8dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintHorizontal_bias="0.707" />
+    tools:context="com.polito.cesarldm.tfg_bitadroidbeta.ShowDataActivity"
+    android:background="@color/colorBackground">
 
     <ScrollView
         android:id="@+id/sc_SD"
-        android:layout_width="372dp"
-        android:layout_height="419dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/btn_SDA_stop"
+        android:layout_width="0dp"
+        android:layout_height="413dp"
+        android:layout_margin="10dp"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0">
+        app:layout_constraintVertical_bias="0.282">
 
         <LinearLayout
             android:id="@+id/ll_SD"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_margin="20dp"
             android:orientation="vertical"
             app:layout_constraintBottom_toTopOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -115,6 +29,81 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.0" />
     </ScrollView>
+
+    <RelativeLayout
+        android:layout_width="0dp"
+        android:layout_height="75dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/sc_SD"
+        app:layout_constraintVertical_bias="1.0"
+        android:background="@color/colorPrimary"
+        android:elevation="5dp">
+
+        <Chronometer
+            android:id="@+id/chrono_SDA"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_margin="5dp"
+            android:format="%s"
+            android:textColor="@color/colorBackground"
+            android:textSize="20sp"
+            android:visibility="visible"
+            android:tint="@color/colorAccent"/>
+
+
+        <ImageButton
+            android:id="@+id/btn_SDA_start"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/round_button"
+            android:layout_margin="5dp"
+            android:src="@drawable/ic_play"
+            android:tint="@color/colorAccent"/>
+
+        <ImageButton
+            android:id="@+id/btn_SDA_stop"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/round_button"
+            android:layout_toStartOf="@id/btn_SDA_start"
+            android:layout_alignParentBottom="true"
+            android:layout_margin="5dp"
+            android:src="@drawable/ic_pause"
+            android:tint="@color/colorAccent"
+            />
+        <ImageButton
+            android:id="@+id/btn_SDA_end"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/round_button"
+            android:layout_toEndOf="@id/btn_SDA_start"
+            android:layout_alignParentBottom="true"
+            android:layout_margin="5dp"
+            android:src="@drawable/ic_stop"
+            android:tint="@color/colorAccent"
+            />
+        <Button
+            android:id="@+id/bt_SDA_map"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_margin="5dp"
+            android:textSize="10sp"
+            android:textColor="@color/colorAccent"
+            android:padding="1dp"
+            android:background="@null"
+            android:layout_toStartOf="@id/btn_SDA_stop"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentBottom="true"
+            android:drawableTop="@drawable/ic_location"
+            android:layout_marginEnd="16dp"
+            />
+    </RelativeLayout>
 
 
 </android.support.constraint.ConstraintLayout>

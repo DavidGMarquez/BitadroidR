@@ -25,7 +25,6 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     compile files('libs/api.jar')
-    compile files('libs/dsp-collection.jar')
     compile 'com.jjoe64:graphview:4.2.1'
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'

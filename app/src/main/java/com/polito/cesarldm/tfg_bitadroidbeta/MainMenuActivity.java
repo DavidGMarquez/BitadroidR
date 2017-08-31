@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,6 +32,7 @@ import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 public class MainMenuActivity extends AppCompatActivity  implements View.OnClickListener{
 
     //UI Elements
+    RelativeLayout rl;
     Button btnStartRec,btnShowRec,btnEcg;
     FloatingActionButton btnScanDev;
     TextView tvDeviceName,tvDeviceMac,tvBattery;
@@ -44,10 +46,10 @@ public class MainMenuActivity extends AppCompatActivity  implements View.OnClick
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
+        rl=(RelativeLayout)findViewById(R.id.rl_MMA);
         tvDeviceName=(TextView)findViewById(R.id.tv_MM_name);
         tvDeviceMac=(TextView)findViewById(R.id.tv_MM_mac);
         tvBattery=(TextView)findViewById(R.id.tv_battery_info);
-        ivBitalino=(ImageView)findViewById(R.id.imageViewbitalino);
         ivBattery=(ImageView)findViewById(R.id.imageViewBattery);
         ivLogo=(ImageView)findViewById(R.id.imageViewBitaText);
         btnStartRec=(Button) findViewById(R.id.btn_MM_start_recordings);
@@ -74,7 +76,9 @@ public class MainMenuActivity extends AppCompatActivity  implements View.OnClick
         if(device!=null){
             tvDeviceName.setText(device.getName());
             tvDeviceMac.setText(device.getAddress());
-
+            rl.setBackgroundResource(R.drawable.bitalinofound);
+        }else{
+            rl.setBackgroundResource(R.drawable.bitalinonotfound);
         }
 
     }
@@ -102,6 +106,7 @@ public class MainMenuActivity extends AppCompatActivity  implements View.OnClick
             case R.id.btn_MM_scan:
                 Intent bthIntent=new Intent(this,SelectDevicesActivity.class);
                 startActivityForResult(bthIntent,BLUETOOTH_INTENT);
+                overridePendingTransition(R.animator.enter,R.animator.exit);
                 break;
             case R.id.btn_MM_start_recordings:
                 Intent configIntent=new Intent(this,SelectConfigActivity.class);
@@ -133,12 +138,10 @@ public class MainMenuActivity extends AppCompatActivity  implements View.OnClick
         if (requestCode == 1) {
             if(resultCode == SelectDevicesActivity.RESULT_OK){
                 ivLogo.setImageResource(R.drawable.bitalogo);
+                rl.setBackgroundResource(R.drawable.bitalinofound);
                 Bundle b=data.getExtras();
                 device=b.getParcelable("result");
                 deviceDesc=b.getParcelable("Desc");
-                if(deviceDesc.isBITalino2()){
-                    ivBitalino.setImageResource(R.drawable.bitalinoblank470_327);
-                }
                 toastMessageLong(deviceDesc.toString());
                 if(data.hasExtra("State")){
                     deviceState=b.getParcelable("State");
