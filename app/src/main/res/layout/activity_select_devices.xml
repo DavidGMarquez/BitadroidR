@@ -42,6 +42,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.981"
         app:srcCompat="@drawable/ic_reload"
+        android:tint="@color/colorBackground"
         />
 
     <ListView

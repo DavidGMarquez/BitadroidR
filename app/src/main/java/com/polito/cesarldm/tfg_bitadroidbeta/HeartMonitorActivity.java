@@ -236,7 +236,7 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
     }
     @Override
     public void onBackPressed(){
-        super.onBackPressed();
+       // super.onBackPressed();
         alertDialogCheckEnd.show();
     }
     private void endActivity() {

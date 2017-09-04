@@ -27,7 +27,8 @@ public class ChannelConfiguration implements Parcelable{
     public int sampleRate;
     public int visualizationRate;
     public String creationDate;
-    private static DateFormat df=new SimpleDateFormat("dd/mm/yyyy");
+    DateFormat dateFormat = DateFormat.getDateTimeInstance();
+    //private static DateFormat df=new SimpleDateFormat("dd/mm/yyyy");
     public int[] recordingChannels;
     public String[] shownNames;
 
@@ -61,8 +62,8 @@ public class ChannelConfiguration implements Parcelable{
             default:
                 this.visualizationRate=100;
         }
-        Date now=Calendar.getInstance().getTime();
-        this.creationDate=df.format(now);
+        Date date = new Date();
+        this.creationDate=dateFormat.format(date);
 
     }
 
@@ -97,9 +98,10 @@ public class ChannelConfiguration implements Parcelable{
     }
 
     public String channelsToString(){
-        String channelString= Arrays.toString(activeChannels);
-
-        return channelString;
+        return  Arrays.toString(activeChannels);
+    }
+    public String shownToString(){
+        return  Arrays.toString(recordingChannels);
     }
 
     public String[] getActiveChannelsNames() {

@@ -34,6 +34,7 @@ public class JsonManager {
     private static String TAG="JsonMnager";
     private static String fileName="ChannelconfigBitadroid.txt";
     private static String jString;
+    private static String prevPath=Environment.getExternalStorageDirectory()+Constants.APP_DIRECTORY;
     private static String path= Environment.getExternalStorageDirectory()+Constants.APP_DIRECTORY+"/ChannelConfig/";
     private ChannelConfiguration mConf;
     List<ChannelConfiguration> configList;
@@ -86,7 +87,7 @@ public class JsonManager {
     private boolean createPath(){
         File directory =new File(path);
         if(!directory.exists()){
-            if(directory.mkdir()){
+            if(directory.mkdirs()){
                 Log.d(TAG,"directory created");
                 return true;
             }else{

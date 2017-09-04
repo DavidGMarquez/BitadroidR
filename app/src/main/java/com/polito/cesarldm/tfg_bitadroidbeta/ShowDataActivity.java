@@ -214,7 +214,7 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
     }
     @Override
     public void onBackPressed(){
-        super.onBackPressed();
+       // super.onBackPressed();
         alertDialogCheckEnd.show();
     }
     private void endActivity() {
