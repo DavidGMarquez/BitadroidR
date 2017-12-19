@@ -23,12 +23,11 @@ public class RVConfigListAdapter extends RecyclerView.Adapter<RVConfigListAdapte
     ArrayList<ChannelConfiguration>configs=new ArrayList<ChannelConfiguration>();
 
 
-
     public static class ConfigViewHolder extends RecyclerView.ViewHolder{
 
         CardView cv;
         ImageView  ivcard,ivSampled,ivShown;
-        TextView tvName,tvSampleRate,tvShownRate,tvSampledChannels,tvShownChannels;
+        TextView tvName,tvSampleRate,tvShownRate,tvSampledChannels,tvShownChannels,tvDate;
 
         public ConfigViewHolder(View itemView) {
             super(itemView);
@@ -41,6 +40,7 @@ public class RVConfigListAdapter extends RecyclerView.Adapter<RVConfigListAdapte
             tvShownRate=(TextView)itemView.findViewById(R.id.tv_shown);
             tvSampledChannels=(TextView)itemView.findViewById(R.id.tv_channels_sampled);
             tvShownChannels=(TextView)itemView.findViewById(R.id.tv_channels_shown);
+            tvDate=(TextView)itemView.findViewById(R.id.tv_date);
         }
     }
     public RVConfigListAdapter(ArrayList<ChannelConfiguration>configs){
@@ -98,6 +98,7 @@ public class RVConfigListAdapter extends RecyclerView.Adapter<RVConfigListAdapte
         holder.tvShownRate.setText(configs.get(position).getVisualizationRate()+"Hz");
         holder.tvSampledChannels.setText(configs.get(position).channelsToString());
         holder.tvShownChannels.setText(configs.get(position).shownToString());
+        holder.tvDate.setText(configs.get(position).getCreationDate());
     }
 
     @Override
@@ -114,5 +115,10 @@ public class RVConfigListAdapter extends RecyclerView.Adapter<RVConfigListAdapte
     public void deleteConfig(int position) {
         configs.remove(position);
         this.notifyItemRemoved(position);
+    }
+    public void updateConfiguration(int longPressedPosition, ChannelConfiguration mChannelConfig) {
+        configs.remove(longPressedPosition);
+        configs.add(longPressedPosition,mChannelConfig);
+        this.notifyDataSetChanged();
     }
 }

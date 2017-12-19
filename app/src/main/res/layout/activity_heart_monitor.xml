@@ -4,36 +4,33 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.polito.cesarldm.tfg_bitadroidbeta.HeartMonitorActivity"
-    android:background="@color/colorBackground">
+    tools:context="com.polito.cesarldm.tfg_bitadroidbeta.HeartMonitorActivity">
 
 
     <RelativeLayout
         android:id="@+id/relativeLayout_HM"
-        android:layout_width="326dp"
-        android:layout_height="205dp"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:background="@drawable/graph_item_shape"
-        android:elevation="5dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp">
-    </RelativeLayout>
+        app:layout_constraintBottom_toTopOf="@+id/relativeLayout1"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"></RelativeLayout>
 
     <RelativeLayout
         android:id="@+id/bar_HM_play"
         android:layout_width="0dp"
         android:layout_height="75dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="16dp"
+        android:background="@color/colorPrimary"
+        android:elevation="15dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/relativeLayout_HM"
-        app:layout_constraintVertical_bias="1.0"
-        android:background="@color/colorPrimary"
-        android:elevation="15dp">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0">
 
         <Chronometer
             android:id="@+id/chrono_HM"
@@ -42,8 +39,8 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:layout_margin="5dp"
-            android:textColor="@color/colorBackground"
             android:format="%s"
+            android:textColor="@color/colorBackground"
             android:textColorHighlight="@color/colorAccent"
             android:textSize="20sp"
             android:visibility="visible" />
@@ -55,134 +52,159 @@
             android:layout_height="60dp"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
-            android:background="@drawable/round_button"
             android:layout_margin="5dp"
+            android:background="@drawable/round_button"
             android:src="@drawable/ic_play"
-            android:tint="@color/colorAccent"
-            />
+            android:tint="@color/colorAccent" />
 
         <ImageButton
             android:id="@+id/btn_HM_stop"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:background="@drawable/round_button"
-            android:layout_toStartOf="@id/btn_HM_start"
             android:layout_alignParentBottom="true"
             android:layout_margin="5dp"
+            android:layout_toStartOf="@id/btn_HM_start"
+            android:background="@drawable/round_button"
             android:src="@drawable/ic_pause"
-            android:tint="@color/colorAccent"
-            />
+            android:tint="@color/colorAccent" />
+
         <ImageButton
             android:id="@+id/btn_HM_end"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:background="@drawable/round_button"
-            android:layout_toEndOf="@id/btn_HM_start"
             android:layout_alignParentBottom="true"
             android:layout_margin="5dp"
+            android:layout_toEndOf="@id/btn_HM_start"
+            android:background="@drawable/round_button"
             android:src="@drawable/ic_stop"
-            android:tint="@color/colorAccent"
-            />
+            android:tint="@color/colorAccent" />
+
         <Button
             android:id="@+id/bt_HM_map"
             android:layout_width="45dp"
             android:layout_height="45dp"
-            android:layout_margin="5dp"
-            android:textSize="10sp"
-            android:padding="1dp"
-            android:background="@null"
-            android:layout_toStartOf="@id/btn_HM_stop"
-            android:layout_alignParentStart="true"
             android:layout_alignParentBottom="true"
-            android:drawableTop="@drawable/ic_location"
+            android:layout_alignParentStart="true"
+            android:layout_margin="5dp"
             android:layout_marginEnd="16dp"
-            />
+            android:layout_toStartOf="@id/btn_HM_stop"
+            android:background="@null"
+            android:drawableTop="@drawable/ic_location"
+            android:padding="1dp"
+            android:textSize="10sp" />
     </RelativeLayout>
 
     <RelativeLayout
         android:id="@+id/relativeLayout1"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/bar_HM_play"
-        app:layout_constraintHorizontal_bias="0.509"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:background="@drawable/graph_item_shape"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/relativeLayout_HM"
-        app:layout_constraintVertical_bias="0.1"
+        android:layout_marginBottom="1dp"
+        android:background="@drawable/various_item_shape"
         android:padding="10dp"
-        android:elevation="5dp">
+        app:layout_constraintBottom_toTopOf="@+id/rv_zoom_btn"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent">
 
         <ImageView
             android:id="@+id/iv_HM_bpm"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/ic_heart"
             android:layout_above="@+id/tv_HM_rr"
-            android:layout_marginTop="5dp"/>
+            android:layout_marginTop="5dp"
+            app:srcCompat="@drawable/ic_heart" />
+
         <ImageView
             android:id="@+id/iv_HM_rr"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/ic_rr"
             android:layout_below="@id/iv_HM_bpm"
-            android:layout_marginTop="5dp"/>
-
+            android:layout_marginTop="5dp"
+            app:srcCompat="@drawable/ic_rr" />
 
 
         <TextView
             android:id="@+id/tv_HM_bpm"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Bpm"
-            android:textSize="30sp"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:layout_toEndOf="@id/iv_HM_bpm"
-            />
+            android:text="Bpm"
+            android:textSize="30sp" />
 
         <TextView
             android:id="@+id/tv_HM_rr"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/tv_HM_bpm"
-            android:text="RR"
-            android:textSize="30sp"
-            android:layout_toEndOf="@id/iv_HM_rr"
             android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"/>
+            android:layout_marginRight="10dp"
+            android:layout_toEndOf="@id/iv_HM_rr"
+            android:text="RR"
+            android:textSize="30sp" />
 
 
         <ImageButton
             android:id="@+id/btn_HM_Stats"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-           android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
             android:layout_margin="10dp"
             android:background="@null"
-            android:src="@drawable/ic_forward"/>
+            android:src="@drawable/ic_forward" />
 
     </RelativeLayout>
 
-    <TextView
-        android:id="@+id/tv_HM_latlon"
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:id="@+id/rv_zoom_btn"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_margin="10dp"
-        android:text="Location:"
-        android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginLeft="8dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintHorizontal_bias="0.067"
-        android:layout_marginBottom="8dp"
+        android:layout_centerHorizontal="true"
+        android:elevation="5dp"
         app:layout_constraintBottom_toTopOf="@+id/bar_HM_play"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@+id/relativeLayout1"
-        app:layout_constraintVertical_bias="0.175"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp" />
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent">
 
+        <ImageButton
+            android:id="@+id/btn_plus"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="5dp"
+            android:background="@drawable/round_button_2"
+            android:src="@drawable/ic_zoom_in" />
+
+        <Button
+            android:id="@+id/btn_reset"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_toStartOf="@id/btn_plus"
+            android:background="@drawable/elevated_button_shape"
+            android:text="Reset"
+            android:textColor="@color/colorBackground" />
+
+        <ImageButton
+            android:id="@+id/btn_minus"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_toStartOf="@id/btn_reset"
+            android:background="@drawable/round_button_2"
+            android:src="@drawable/ic_zoom_out" />
+        <RadioButton
+            android:id="@+id/RAW_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="10dp"
+            android:text="RAW"
+            android:textColorHighlight="@color/colorAlert"/>
+
+    </RelativeLayout>
 </android.support.constraint.ConstraintLayout>

@@ -63,13 +63,18 @@ public class SelectDevicesActivity extends AppCompatActivity  implements View.On
     private int positionSelected;
     //boolean
     private boolean mScanning=false;
+    private boolean mConnecting=false;
+    private boolean isgood=false;
     private boolean mBound;
     Messenger mService = null;
     private final Messenger activityMessengerDevice = new Messenger(new IncomingHandler());
     private ProgressDialog prgDialogCheckBitalino;
     private AlertDialog alertDialogCheckBitalino;
+    private AlertDialog alertDialogFailBitalino;
 
     private static final long SCAN_PERIOD = 5000;
+    private static final long WAIT_PERIOD = 20000;
+    private static final long CONFIRM_PERIOD = 3000;
 
     class IncomingHandler extends Handler {
         @Override
@@ -86,18 +91,43 @@ public class SelectDevicesActivity extends AppCompatActivity  implements View.On
                     state = b2.getParcelable("State");
                     if(desc.isBITalino2()){
                         alertDialogCheckBitalino.show();
+                        mHandler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                alertDialogCheckBitalino.dismiss();
+                                returnDeviceBitalinoDescription();
+
+                            }
+                        }, CONFIRM_PERIOD);
+                        alertDialogCheckBitalino.show();
+
+                    }
+                    if(!desc.isBITalino2()){
+                        alertDialogCheckBitalino.show();
+                        mHandler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                alertDialogCheckBitalino.dismiss();
+                                returnDeviceBitalinoDescription();
+
+                            }
+                        }, CONFIRM_PERIOD);
+                        alertDialogCheckBitalino.show();
+
                     }
 
 
                     break;
                 case BitalinoCommunicationService.MSG_SEND_CONNECTION_ON:
                     prgDialogCheckBitalino.dismiss();
+                    isgood=true;
                     requestDesc();
 
 
                     break;
                 case BitalinoCommunicationService.MSG_SEND_CONNECTION_OFF:
                     prgDialogCheckBitalino.dismiss();
+                    alertDialogFailBitalino.show();
                     toastMessageLong("Unable to connect to the selected device");
                     break;
                 default:
@@ -105,10 +135,12 @@ public class SelectDevicesActivity extends AppCompatActivity  implements View.On
                 case BitalinoCommunicationService.MSG_SEND_NOTICE:
                     Bundle b3=msg.getData();
                     String s=b3.getString("Notice");
-                    toastMessageShort(s);
                     if(desc.isBITalino2()){
                         alertDialogCheckBitalino.show();
                     }
+                    if (!desc.isBITalino2()) {
+                            alertDialogCheckBitalino.show();
+                        }
 
                     break;
 
@@ -126,7 +158,6 @@ public class SelectDevicesActivity extends AppCompatActivity  implements View.On
         }
         overridePendingTransition(R.animator.lefttorigth,R.animator.rigthtoleft);
         setResult(SelectDevicesActivity.RESULT_OK, returnIntentTwo);
-
         this.finish();
     }
 
@@ -154,17 +185,26 @@ public class SelectDevicesActivity extends AppCompatActivity  implements View.On
         alertDialogCheckBitalino=new AlertDialog.Builder(SelectDevicesActivity.this).create();
         alertDialogCheckBitalino.setTitle("Selected Device");
         if(desc!=null){
-            alertDialogCheckBitalino.setMessage("Bitalino device version "+desc.getFwVersion()+"/nactive and in range");
+            alertDialogCheckBitalino.setMessage("Bitalino device version "+desc.getFwVersion()+"active and in range");
         }else {
-            alertDialogCheckBitalino.setMessage("Device active and in range");
+            alertDialogCheckBitalino.setMessage("Device active and in range, please wait...");
         }
-        alertDialogCheckBitalino.setButton("OK",new DialogInterface.OnClickListener(){
+       // alertDialogCheckBitalino.setButton("OK",new DialogInterface.OnClickListener(){
+          //  public void onClick(DialogInterface dialog,int which){
+               // returnDeviceBitalinoDescription();
+          //  }
+       // });
+        alertDialogCheckBitalino.setIcon(R.drawable.ic_check);
+
+        alertDialogFailBitalino=new AlertDialog.Builder(SelectDevicesActivity.this).create();
+        alertDialogFailBitalino.setTitle("Selected Device");
+        alertDialogFailBitalino.setMessage("Device not responding");
+        alertDialogFailBitalino.setButton("OK",new DialogInterface.OnClickListener(){
             public void onClick(DialogInterface dialog,int which){
                 returnDeviceBitalinoDescription();
             }
         });
-        alertDialogCheckBitalino.setIcon(R.drawable.ic_check);
-
+        alertDialogFailBitalino.setIcon(R.drawable.ic_fail);
     }
 
     @Override
@@ -246,6 +286,25 @@ public class SelectDevicesActivity extends AppCompatActivity  implements View.On
             bthDeviceScan.stopScan();
         }
     }
+    private void startBitalinoConnection(){
+        if(!mConnecting) {
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if(!isgood) {
+                        mConnecting = false;
+                        stopConnectionToBitalino();
+                    }
+                }
+            }, WAIT_PERIOD);
+            mConnecting = true;
+            connectToBitalino();
+        }else {
+            //mConnecting=false;
+            //stopConnectionToBitalino();
+        }
+
+    }
     @Override
     public void onClick(View v) {
         adapterNew.clear();
@@ -258,6 +317,7 @@ public class SelectDevicesActivity extends AppCompatActivity  implements View.On
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         prgDialogCheckBitalino.show();
         positionSelected=position;
+       // startBitalinoConnection();
         connectToBitalino();
 
         }
@@ -403,6 +463,17 @@ public class SelectDevicesActivity extends AppCompatActivity  implements View.On
         Message msg = Message.obtain(null, BitalinoCommunicationService.MSG_START_CONNECTION, 0, 0);
         msg.replyTo=activityMessengerDevice;
         msg.setData(b);
+        try {
+            mService.send(msg);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+    public void stopConnectionToBitalino() {
+        if (!mBound) return;
+        // Create and send a message to the service, using a supported 'what' value
+        Message msg = Message.obtain(null, BitalinoCommunicationService.MSG_STOP_CONNECTION, 0, 0);
+        msg.replyTo=activityMessengerDevice;
         try {
             mService.send(msg);
         } catch (RemoteException e) {

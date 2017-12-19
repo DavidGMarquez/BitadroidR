@@ -7,6 +7,7 @@ import android.widget.Switch;
 
 import java.io.Serializable;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -27,7 +28,6 @@ public class ChannelConfiguration implements Parcelable{
     public int sampleRate;
     public int visualizationRate;
     public String creationDate;
-    DateFormat dateFormat = DateFormat.getDateTimeInstance();
     //private static DateFormat df=new SimpleDateFormat("dd/mm/yyyy");
     public int[] recordingChannels;
     public String[] shownNames;
@@ -57,13 +57,37 @@ public class ChannelConfiguration implements Parcelable{
                 this.visualizationRate=100;
                 break;
             case 1000:
-                this.visualizationRate=100;
+                this.visualizationRate=10;
                 break;
             default:
                 this.visualizationRate=100;
         }
-        Date date = new Date();
-        this.creationDate=dateFormat.format(date);
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyy");
+        Date dateWithoutTime = null;
+        try {
+            dateWithoutTime = sdf.parse(sdf.format(new Date()));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        this.creationDate=sdf.format(dateWithoutTime);
+
+    }
+    public ChannelConfiguration(String name,int[] activeChannels,int[]recordingChannels,int sampleRate,int visualizationRate, String[] activeChannelsNames,String[] shownNames){
+        this.activeChannels=activeChannels;
+        this.sampleRate=sampleRate;
+        this.visualizationRate=visualizationRate;
+        this.name=name;
+        this.activeChannelsNames=activeChannelsNames;
+        this.recordingChannels=recordingChannels;
+        this.shownNames=shownNames;
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-mm-yyy");
+        Date dateWithoutTime = null;
+        try {
+            dateWithoutTime = sdf.parse(sdf.format(new Date()));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        this.creationDate=sdf.format(dateWithoutTime);
 
     }
 
@@ -177,6 +201,18 @@ public class ChannelConfiguration implements Parcelable{
         recordingChannels=in.createIntArray();
        shownNames=in.createStringArray();
 
+    }
+    public String getheaderChannelNames(){
+        String result="[";
+        for(int i=0;i<activeChannelsNames.length;i++){
+            result=result+"\""+activeChannelsNames[i]+"\"";
+            if(i<activeChannelsNames.length-1){
+                result=result+",";
+            }else{
+                result=result+"]";
+            }
+        }
+        return result;
     }
 
 }

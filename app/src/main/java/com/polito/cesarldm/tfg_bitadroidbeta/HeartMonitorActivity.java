@@ -3,6 +3,7 @@ package com.polito.cesarldm.tfg_bitadroidbeta;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
@@ -23,6 +24,7 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,19 +33,24 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.ImageButton;
+import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.jobs.MoveViewJob;
 import com.polito.cesarldm.tfg_bitadroidbeta.beats.Bdac;
 import com.polito.cesarldm.tfg_bitadroidbeta.beats.SampleRate;
 import com.polito.cesarldm.tfg_bitadroidbeta.services.BitalinoCommunicationService;
 import com.polito.cesarldm.tfg_bitadroidbeta.services.GPSService;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.ChannelConfiguration;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.FrameTransferFunction;
+import com.polito.cesarldm.tfg_bitadroidbeta.vo.HMFrame;
+import com.polito.cesarldm.tfg_bitadroidbeta.vo.Linechart;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.MPAndroidGraph;
+import com.polito.cesarldm.tfg_bitadroidbeta.vo.RecordingNotificationBuilder;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.SignalFilter;
 
 import java.util.ArrayList;
@@ -55,21 +62,24 @@ import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 public class HeartMonitorActivity extends AppCompatActivity implements View.OnClickListener{
     static final String TAG="SHOW DATA ACTIVITY";
     //UI
-    ImageButton btnStart, btnStop,btnEnd,btnStats;
-    Button btnMap;
+    ImageButton btnStart, btnStop,btnEnd,btnStats,btnZoomIn,btnZoomOut;
+    Button btnMap,btnZoomReset;
+    RadioButton rdbtnRaw;
     SeekBar sbUpTh;
     ArrayList<Entry> rrValues=new ArrayList<Entry>();
     ArrayList<Entry> bpmValues=new ArrayList<Entry>();
     ArrayList<Location> locations=new ArrayList<Location>();
-    TextView tvBpm,tvRR,tvLoc;
+    TextView tvBpm,tvRR;
     Chronometer chrono;
     static SoundPool soundPool;
     static AudioManager amg;
     static int audio;
     //ArrayList<MPAndroidGraph> graphs=new ArrayList<MPAndroidGraph>();
-    MPAndroidGraph mpAndroidGraph;
+    //MPAndroidGraph mpAndroidGraph;
+    Linechart linechart;
     //ListView graphList;
     FrameTransferFunction frameTransFunc;
+    HMFrame mHMFrame;
 
 
     private double samplingFrames;
@@ -85,11 +95,14 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
     private int delay;
 
     BluetoothDevice device;
+    RecordingNotificationBuilder mNotifierBuilder;
     static ChannelConfiguration mConfiguration;
     private int dataCheckCount=0;
     boolean mBound;
     boolean isVisible;
     boolean isConnected=false;
+    boolean recordingStarted=false;
+    boolean isRAWEnabled;
     private final Messenger activityMessenger = new Messenger(new HeartMonitorActivity.IncomingHandler());
     Messenger mService = null;
     private LayoutInflater inflater;
@@ -98,7 +111,7 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
     float sumForAvg=0;
     private float yMax,yMin,avg;
     private Bdac bdac;
-    private AlertDialog alertDialogCheckEnd;
+    private AlertDialog alertDialogCheckEnd, alertDialogConnected;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,6 +122,7 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
             Toast.makeText(this, "No device or config,", Toast.LENGTH_SHORT).show();
             finish();
         }
+        mHMFrame=new HMFrame();
         inflater = this.getLayoutInflater();
 
         //Solicitar permisos
@@ -127,12 +141,21 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
             btnEnd = (ImageButton) findViewById(R.id.btn_HM_end);
             btnEnd.setOnClickListener(this);
             btnStats.setOnClickListener(this);
+            btnZoomIn=(ImageButton)findViewById(R.id.btn_plus);
+            btnZoomIn.setOnClickListener(this);
+            btnZoomReset=(Button) findViewById(R.id.btn_reset);
+            btnZoomReset.setOnClickListener(this);
+            btnZoomOut=(ImageButton) findViewById(R.id.btn_minus);
+            btnZoomOut.setOnClickListener(this);
+            rdbtnRaw=(RadioButton)findViewById(R.id.RAW_btn);
+            rdbtnRaw.setOnClickListener(this);
+            rdbtnRaw.setChecked(true);
+            isRAWEnabled=true;
             Intent intent = new Intent(this, BitalinoCommunicationService.class);
             intent.putExtra("Device", device);
             intent.putExtra("Config", mConfiguration);
             tvBpm=(TextView)findViewById(R.id.tv_HM_bpm);
             tvRR=(TextView)findViewById(R.id.tv_HM_rr);
-            tvLoc=(TextView)findViewById(R.id.tv_HM_latlon);
             chrono=(Chronometer)findViewById(R.id.chrono_HM);
             samplingFrames = (double) mConfiguration.getSampleRate() / mConfiguration.getVisualizationRate();
             numberOfFrames = mConfiguration.getSampleRate();
@@ -144,9 +167,9 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
             progressDialogConnecting.setMessage("Connecting to Bitalino");
             frameTransFunc=new FrameTransferFunction(mConfiguration);
             bdac = new Bdac();
+            mNotifierBuilder=new RecordingNotificationBuilder(this,3,getClass());
         }else {
             Toast.makeText(this, "No device selected ", Toast.LENGTH_SHORT).show();
-            initSound();
             finish();
         }
 
@@ -169,33 +192,48 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
     private void setActivityLayout() {
 
         ViewGroup.LayoutParams layoutParams=new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        mpAndroidGraph=new MPAndroidGraph(this,mConfiguration,0);
+       // mpAndroidGraph=new MPAndroidGraph(this,mConfiguration,0);
+        linechart=new Linechart(this,mConfiguration,0);
         RelativeLayout rl=(RelativeLayout)findViewById(R.id.relativeLayout_HM);
-        mpAndroidGraph.getGraphView().setLayoutParams(layoutParams);
-        rl.addView(mpAndroidGraph.getGraphView());
+        linechart.getGraphView().setLayoutParams(layoutParams);
+        rl.addView(linechart.getGraphView());
 
     }
     private void alertDialogInitiate() {
         alertDialogCheckEnd=new AlertDialog.Builder(HeartMonitorActivity.this).create();
-        alertDialogCheckEnd.setTitle("Warning");
-        alertDialogCheckEnd.setMessage("Are you sure you want to stop the current recording?");
-        alertDialogCheckEnd.setButton("YES",new DialogInterface.OnClickListener(){
+        alertDialogCheckEnd.setTitle(Html.fromHtml("<font color='#F44E42'>Warning</font>"));
+        alertDialogCheckEnd.setMessage(Html.fromHtml("<font color='#F44E42'>Are you sure you want to stop the current recording?</font>"));
+        alertDialogCheckEnd.setButton(Dialog.BUTTON_POSITIVE,Html.fromHtml("<font color='#F44E42'>YES</font>"),new DialogInterface.OnClickListener(){
             public void onClick(DialogInterface dialog,int which){
+                mNotifierBuilder.closeNotification();
                 endActivity();
 
             }
         });
-        alertDialogCheckEnd.setButton2("NO",new DialogInterface.OnClickListener(){
+
+        alertDialogCheckEnd.setButton(Dialog.BUTTON_NEGATIVE,Html.fromHtml("<font color='#F44E42'>NO</font>"),new DialogInterface.OnClickListener(){
             public void onClick(DialogInterface dialog,int which){
-
-
             }
         });
-        alertDialogCheckEnd.setIcon(R.drawable.ic_warning_notice);
+        alertDialogCheckEnd.setOnShowListener( new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface arg0) {
+                alertDialogCheckEnd.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.colorAlert));
+                alertDialogCheckEnd.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.colorAlert));
+            }
+        });
 
+        alertDialogCheckEnd.setIcon(R.drawable.ic_fail);
+
+        alertDialogConnected=new AlertDialog.Builder(HeartMonitorActivity.this).create();
+        alertDialogConnected.setTitle("Device Connected");
+        alertDialogConnected.setMessage("Press Play to start recording");
+        alertDialogConnected.setButton("OK",new DialogInterface.OnClickListener(){
+            public void onClick(DialogInterface dialog,int which){
+            }
+        });
+        alertDialogConnected.setIcon(R.drawable.ic_check);
     }
-
-
 
     @Override
     protected void onStart() {
@@ -204,7 +242,6 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
                 Context.BIND_AUTO_CREATE);
         if(!isConnected){
             progressDialogConnecting.show();
-
         }
     }
     @Override
@@ -217,6 +254,7 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
     protected void onPause(){
         super.onPause();
         isVisible=false;
+        linechart.cleanPool();
     }
     @Override
     protected void onStop() {
@@ -229,17 +267,23 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
         if(mBound) {
             unbindService(mConnection);
         }
+        MoveViewJob.getInstance(null,0f,0f,null,null);
         Intent intent = new Intent(this, BitalinoCommunicationService.class);
         stopService(intent);
         cleanUpIfEnd();
-
     }
     @Override
     public void onBackPressed(){
-       // super.onBackPressed();
-        alertDialogCheckEnd.show();
+        if(recordingStarted) {
+            alertDialogCheckEnd.show();
+        }else{
+            mNotifierBuilder.closeNotification();
+            endActivity();
+        }
     }
     private void endActivity() {
+        Intent gpsIntentEnd=new Intent(this,GPSService.class);
+        stopService(gpsIntentEnd);
         this.finish();
     }
 
@@ -255,6 +299,7 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
                 startService(gpsIntent);
                 chrono.setBase(SystemClock.elapsedRealtime()+timeWhenStopped);
                 chrono.start();
+                mNotifierBuilder.launchNotification();
                 break;
             case R.id.btn_HM_stop:
                 stopRecording();
@@ -262,9 +307,16 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
                 stopService(gpsIntentStop);
                 timeWhenStopped=chrono.getBase()- SystemClock.elapsedRealtime();
                 chrono.stop();
+                mNotifierBuilder.closeNotification();
                 break;
             case R.id.btn_HM_end:
-                alertDialogCheckEnd.show();
+                if(recordingStarted) {
+                    alertDialogCheckEnd.show();
+
+                }else{
+                    mNotifierBuilder.closeNotification();
+                    endActivity();
+                }
                 break;
             case R.id.bt_HM_map:
                 Intent iMap=new Intent (this,PopMapActivity.class);
@@ -276,9 +328,30 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
             case R.id.btn_HM_Stats:
                 if(bpmValues!=null&&rrValues!=null) {
                     Intent iStats = new Intent(this, PopBPMRRGraphActivity.class);
-                    iStats.putParcelableArrayListExtra("bpm", bpmValues);
-                    iStats.putParcelableArrayListExtra("rr", rrValues);
+                    iStats.putParcelableArrayListExtra("bpm", mHMFrame.getBpmValues());
+                    iStats.putParcelableArrayListExtra("rr", mHMFrame.getRrValues());
                     startActivity(iStats);
+                }
+                break;
+            case R.id.btn_plus:
+                linechart.zoomIn();
+
+                break;
+            case R.id.btn_minus:
+                linechart.zoomOut();
+
+                break;
+            case R.id.btn_reset:
+                linechart.resetZoom();
+
+                break;
+            case R.id.RAW_btn:
+                if(isRAWEnabled){
+                    rdbtnRaw.setChecked(false);
+                    isRAWEnabled=false;
+                }else if(!isRAWEnabled){
+                    rdbtnRaw.setChecked(true);
+                    isRAWEnabled=true;
                 }
                 break;
 
@@ -298,6 +371,7 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
                     addSampletoBeatDetection(frame);
                     appendData(frame);
                     dataCheckCount++;
+                    recordingStarted=true;
                     break;
                 case BitalinoCommunicationService.MSG_SEND_CONNECTION_OFF:
                     Toast.makeText(getApplicationContext(),"Device Disconnected",Toast.LENGTH_SHORT).show();
@@ -313,12 +387,15 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
                     break;
                 case BitalinoCommunicationService.MSG_SEND_CONNECTION_ON:
                     progressDialogConnecting.dismiss();
+                    if(!recordingStarted){
+                        alertDialogConnected.show();
+                    }
+
                     break;
                 case BitalinoCommunicationService.MSG_SEND_LOCATION:
                     Bundle bl=msg.getData();
                     Location location=bl.getParcelable("Location");
                     locations.add(location);
-                    tvLoc.setText("Location: "+location.getLatitude()+" "+location.getLongitude());
                     break;
                 default:
                     super.handleMessage(msg);
@@ -327,45 +404,29 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
     }
 
     private void appendData(BITalinoFrame frame) {
+        timeCounter++;
+        if (isVisible) {
         float f;
+        float[] ftemp= new float[6];
         int position=mConfiguration.recordingChannels[0];
-        if (samplingCounter++ >= samplingFrames) {
-            timeCounter++;
-           xValue=xValueGenerator(timeCounter);
-            /** if(mSignalFilter.checkFrame(frame.getAnalog(position))) {
-             f = frame.getAnalog(position);
-             }else{
-             f=mSignalFilter.getAvg();
-             }**/
-            f = frame.getAnalog(position);
-            if (isVisible) {
-                    Entry entry = new Entry(xValue, f);
-                    mpAndroidGraph.addEntry(entry);
+        xValue=xValueGenerator(timeCounter);
+        if(!isRAWEnabled){
+            ftemp=frameTransFunc.getConvertedValues(frame);
+            f=ftemp[0];
+        }else f = frame.getAnalog(position);
+                   linechart.addEntry(xValue,f);
                     samplingCounter -= samplingFrames;
             }
             if (dataCheckCount >= mConfiguration.getSampleRate()*10) {
-                updateStatistics(xValue);
                 dataCheckCount = 0;
                 updateBPMCounter=0;
             }
-        }
     }
     private float xValueGenerator(double timeCounter) {
         float tempXValue = (float) (timeCounter* 1000) / mConfiguration.getVisualizationRate();
         return tempXValue;
     }
 
-
-
- public void updateStatistics(float xValue){
-     long beats=updateBPMCounter*6;
-     tvBpm.setText("Bpm: "+beats);
-     Entry e=new Entry(xValue,(float) beats);
-     bpmValues.add(e);
-
-
-
- }
 
     /**
      * Class for interacting with the main interface of the service.
@@ -434,6 +495,22 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
             this.finish();
         }
     }
+    public void sendRRBpm(float tempRR,float tempbpm){
+        if (!mBound) return;
+        // Create and send a message to the service, using a supported 'what' value
+        Bundle b=new Bundle();
+        b.putFloat("rr",tempRR);
+        b.putFloat("bpm",tempbpm);
+        Message msg = Message.obtain(null, BitalinoCommunicationService.MSG_SEND_BPM_RR, 0, 0);
+        msg.replyTo=activityMessenger;
+        msg.setData(b);
+        try {
+            mService.send(msg);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+
+    }
     /**
      * Permission check explicitly required from user at run time
      *
@@ -486,7 +563,7 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
      * real
      */
     private void startBeatDetection() {
-        toastMessageShort("Beat detection started");
+
         bdac.resetBdac();
         SampleRate.setSampleRate(mConfiguration.sampleRate);
         bdac.resetBdac();
@@ -512,7 +589,7 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
     public void addHighligths(int time){
         playSound(audio);
        float x= xValueGenerator((double) time);
-        mpAndroidGraph.setHighLightt(x);
+        linechart.setHighLightt(x);
         updateBPMCounter++;
         calculateRRTime();
 
@@ -524,8 +601,14 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
         float xValue=xValueGenerator(timeCounter);
         Entry e=new Entry(xValue,tempRR);
         rrValues.add(e);
-
+        mHMFrame.addRR(e);
+        float beats= 60/tempRR;
+        tvBpm.setText("Bpm: "+beats);
+        Entry e2=new Entry(xValue,beats);
+        bpmValues.add(e2);
+        mHMFrame.addBpm(e2);
         RRSamplecount=0;
+        sendRRBpm(tempRR,beats);
 
     }
 
@@ -547,8 +630,10 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
 
     public void cleanUpIfEnd(){
         audio=0;
-        soundPool.release();
-        soundPool=null;
+        if(soundPool!=null){
+            soundPool.release();
+            soundPool=null;
+        }
 
     }
 

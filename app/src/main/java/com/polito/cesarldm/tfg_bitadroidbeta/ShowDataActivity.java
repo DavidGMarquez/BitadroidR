@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
@@ -12,6 +13,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.location.Location;
 import android.os.Build;
@@ -24,6 +26,7 @@ import android.os.SystemClock;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,15 +38,21 @@ import android.widget.Chronometer;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.jobs.MoveViewJob;
 import com.polito.cesarldm.tfg_bitadroidbeta.services.*;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.ChannelConfiguration;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.FrameTransferFunction;
+import com.polito.cesarldm.tfg_bitadroidbeta.vo.Linechart;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.MPAndroidGraph;
+import com.polito.cesarldm.tfg_bitadroidbeta.vo.RecordingNotificationBuilder;
+
 
 
 import java.util.ArrayList;
@@ -56,10 +65,12 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
 
     static final String TAG="SHOW DATA ACTIVITY";
     //UI
-    Button btnMap;
-    ImageButton btnStart, btnStop,btnEnd;
+    Button btnMap,btnZoomReset;
+    RadioButton rdbtnRaw;
+    ImageButton btnStart, btnStop,btnEnd,btnZoomIn,btnZoomOut;
     ArrayList<BITalinoFrame> frames=new ArrayList<BITalinoFrame>();
-    ArrayList<MPAndroidGraph> graphs=new ArrayList<MPAndroidGraph>();
+    //ArrayList<MPAndroidGraph> graphs=new ArrayList<MPAndroidGraph>();
+    ArrayList<Linechart> graphs=new ArrayList<Linechart>();
     ArrayList<Location> locations=new ArrayList<Location>();
     ScrollView scrollView;
     //ListView graphList;
@@ -75,15 +86,17 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
     boolean mBound;
     boolean isVisible;
     boolean isConnected=false;
+    boolean recordingStarted=false;
+    boolean isRAWEnabled;
     private final Messenger activityMessenger = new Messenger(new IncomingHandler());
     Messenger mService = null;
     private LayoutInflater inflater;
     public ProgressDialog progressDialogConnecting;
-    private AlertDialog alertDialogCheckEnd;
+    private AlertDialog alertDialogCheckEnd,alertDialogConnected;
     Chronometer chrono;
-
-
-
+    int seconds=10;
+    private Entry entry=new Entry();
+    RecordingNotificationBuilder mNotifierBuilder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,27 +108,18 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
             finish();
        }
         inflater = this.getLayoutInflater();
-
+        setUpButtons();
         //Solicitar permisos
         permissionCheck();
         if(getIntent().getParcelableExtra("Device")!=null) {
             device = getIntent().getParcelableExtra("Device");
             mConfiguration = getIntent().getParcelableExtra("Config");
-            btnStart = (ImageButton) findViewById(R.id.btn_SDA_start);
-            btnStart.setOnClickListener(this);
-            btnStop = (ImageButton) findViewById(R.id.btn_SDA_stop);
-            btnStop.setOnClickListener(this);
-            btnEnd = (ImageButton) findViewById(R.id.btn_SDA_end);
-            btnEnd.setOnClickListener(this);
-            btnMap=(Button) findViewById(R.id.bt_SDA_map);
-            btnMap.setOnClickListener(this);
             chrono=(Chronometer)findViewById(R.id.chrono_SDA);
             scrollView=(ScrollView)findViewById(R.id.sc_SD);
             Intent intent = new Intent(this, BitalinoCommunicationService.class);
             //Intent intent = new Intent(this, BitalinoDataService.class);
             //intent.putExtra("Device", device);
             //intent.putExtra("Config", mConfiguration);
-
             //-----Part of code created by @author Carlos Marten, Bitadroid APP NewRecordingActivity
             samplingFrames = (double) mConfiguration.getSampleRate() / mConfiguration.getVisualizationRate();
             numberOfFrames = mConfiguration.getSampleRate();
@@ -126,58 +130,99 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
             progressDialogConnecting=new ProgressDialog(ShowDataActivity.this);
             progressDialogConnecting.setMessage("Connecting to Bitalino");
             frameTransFunc=new FrameTransferFunction(mConfiguration);
+            mNotifierBuilder=new RecordingNotificationBuilder(this,1,getClass());
+            rdbtnRaw=(RadioButton)findViewById(R.id.RAW_btn);
         }else {
             Toast.makeText(this, "No device selected ", Toast.LENGTH_SHORT).show();
             finish();
         }
 
     }
+    private void setUpButtons(){
+        btnStart = (ImageButton) findViewById(R.id.btn_SDA_start);
+        btnStart.setOnClickListener(this);
+        btnStop = (ImageButton) findViewById(R.id.btn_SDA_stop);
+        btnStop.setOnClickListener(this);
+        btnEnd = (ImageButton) findViewById(R.id.btn_SDA_end);
+        btnEnd.setOnClickListener(this);
+        btnMap=(Button) findViewById(R.id.bt_SDA_map);
+        btnMap.setOnClickListener(this);
+        btnZoomIn=(ImageButton)findViewById(R.id.btn_plus);
+        btnZoomIn.setOnClickListener(this);
+        btnZoomReset=(Button) findViewById(R.id.btn_reset);
+        btnZoomReset.setOnClickListener(this);
+        btnZoomOut=(ImageButton) findViewById(R.id.btn_minus);
+        btnZoomOut.setOnClickListener(this);
+        rdbtnRaw=(RadioButton)findViewById(R.id.RAW_btn);
+        rdbtnRaw.setChecked(true);
+        isRAWEnabled=true;
+        rdbtnRaw.setOnClickListener(this);
+    }
 
 
     private void alertDialogInitiate() {
         alertDialogCheckEnd=new AlertDialog.Builder(ShowDataActivity.this).create();
-        alertDialogCheckEnd.setTitle("Warning");
-        alertDialogCheckEnd.setMessage("Are you sure you want to stop the current recording?");
-        alertDialogCheckEnd.setButton("YES",new DialogInterface.OnClickListener(){
+        alertDialogCheckEnd.setTitle(Html.fromHtml("<font color='#F44E42'>Warning</font>"));
+        alertDialogCheckEnd.setMessage(Html.fromHtml("<font color='#F44E42'>Are you sure you want to stop the current recording?</font>"));
+        alertDialogCheckEnd.setButton(Dialog.BUTTON_POSITIVE,Html.fromHtml("<font color='#F44E42'>YES</font>"),new DialogInterface.OnClickListener(){
             public void onClick(DialogInterface dialog,int which){
-            endActivity();
+                mNotifierBuilder.closeNotification();
+                endActivity();
 
             }
         });
-        alertDialogCheckEnd.setButton2("NO",new DialogInterface.OnClickListener(){
+
+        alertDialogCheckEnd.setButton(Dialog.BUTTON_NEGATIVE,Html.fromHtml("<font color='#F44E42'>NO</font>"),new DialogInterface.OnClickListener(){
             public void onClick(DialogInterface dialog,int which){
-
-
             }
         });
-        alertDialogCheckEnd.setIcon(R.drawable.ic_warning_notice);
+        alertDialogCheckEnd.setOnShowListener( new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface arg0) {
+                alertDialogCheckEnd.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.colorAlert));
+                alertDialogCheckEnd.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.colorAlert));
+            }
+        });
+
+        alertDialogCheckEnd.setIcon(R.drawable.ic_fail);
+        alertDialogConnected=new AlertDialog.Builder(ShowDataActivity.this).create();
+        alertDialogConnected.setTitle("Device Connected");
+        alertDialogConnected.setMessage("Press Play to start recording");
+        alertDialogConnected.setButton("OK",new DialogInterface.OnClickListener(){
+            public void onClick(DialogInterface dialog,int which){
+            }
+        });
+        alertDialogConnected.setIcon(R.drawable.ic_check);
 
     }
 
-
-
     private void setActivityLayout() {
+         float scale =getBaseContext().getResources().getDisplayMetrics().density;
+        int pixels = (int) (150 * scale + 0.5f);
         //ScrollView sc=(ScrollView)findViewById(R.id.sc_SD);
+        scrollView=(ScrollView)findViewById(R.id.sc_SD);
         LinearLayout ll=(LinearLayout)findViewById(R.id.ll_SD);
         //sc.addView(ll);
         LayoutParams graphParams,relativeParams;
        // View graphsView=findViewById(R.id.ll_SD);
-        graphParams = new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT);
+        graphParams = new LayoutParams(LayoutParams.MATCH_PARENT,300);
 
-        relativeParams=new LayoutParams(LayoutParams.MATCH_PARENT,300);
+        relativeParams=new LayoutParams(LayoutParams.MATCH_PARENT,pixels);
         for(int i=0; i<mConfiguration.getSize();i++){
-            graphs.add(new MPAndroidGraph(this,mConfiguration,i));
+            graphs.add(new Linechart(this,mConfiguration,i));
+            //graphs.add(new MPAndroidGraph(this,mConfiguration,i));
                     //mConfiguration.activeChannels[i],mConfiguration.activeChannelsNames[i]));
             RelativeLayout graph = (RelativeLayout) inflater.inflate(
                     R.layout.graph_layout, null);
-
-            ll.addView(graph,graphParams);
+            ll.addView(graph);
             //graphs.get(i).getGraphView().setOnTouchListener(graphTouchListener);
             graph.addView(graphs.get(i).getGraphView(),relativeParams);
+            //graphs.get(i).setLastzoomValue(50);
             //((ViewGroup)graphsView).addView(graph, graphParams);
 
         }
     }
+
 
     @Override
     protected void onStart() {
@@ -200,6 +245,9 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
     }
     @Override
     protected void onPause(){
+        for (int j = 0; j < graphs.size(); j++) {
+            graphs.get(j).cleanPool();
+        }
         super.onPause();
         isVisible=false;
     }
@@ -209,15 +257,25 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
         if(mBound) {
             this.unbindService(mConnection);
         }
+        MoveViewJob.getInstance(null,0f,0f,null,null);
+
         Intent intent = new Intent(this, BitalinoCommunicationService.class);
         stopService(intent);
     }
     @Override
     public void onBackPressed(){
-       // super.onBackPressed();
-        alertDialogCheckEnd.show();
+        if(recordingStarted) {
+            alertDialogCheckEnd.show();
+
+        }else{
+            mNotifierBuilder.closeNotification();
+            endActivity();
+        }
+
     }
     private void endActivity() {
+        Intent gpsIntentEnd=new Intent(this,GPSService.class);
+        stopService(gpsIntentEnd);
         this.finish();
     }
     @Override
@@ -229,19 +287,26 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
                 chrono.start();
                 Intent gpsIntent=new Intent(this,GPSService.class);
                 startService(gpsIntent);
+                mNotifierBuilder.launchNotification();
                 break;
             case R.id.btn_SDA_stop:
+                Toast.makeText(this,"F: "+graphs.get(0).getEntryCount(),Toast.LENGTH_LONG).show();
                 stopRecording();
-                Intent gpsIntentStop=new Intent(this,GPSService.class);
-                stopService(gpsIntentStop);
-                timeWhenStopped=chrono.getBase()- SystemClock.elapsedRealtime();
-                chrono.stop();
-                break;
-            case R.id.btn_SDA_end:
                 Intent gpsIntentEnd=new Intent(this,GPSService.class);
                 stopService(gpsIntentEnd);
-                alertDialogCheckEnd.show();
+                timeWhenStopped=chrono.getBase()- SystemClock.elapsedRealtime();
+                chrono.stop();
+                mNotifierBuilder.closeNotification();
 
+                break;
+            case R.id.btn_SDA_end:
+                if(recordingStarted) {
+                    alertDialogCheckEnd.show();
+
+                }else {
+                    mNotifierBuilder.closeNotification();
+                    endActivity();
+                }
                 break;
             case R.id.bt_SDA_map:
                 Intent iMap=new Intent (this,PopMapActivity.class);
@@ -249,6 +314,30 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
                     iMap.putParcelableArrayListExtra("Locations", locations);
                 }
                 startActivity(iMap);
+                break;
+            case R.id.btn_plus:
+                for (int j = 0; j < graphs.size(); j++) {
+                    graphs.get(j).zoomIn();
+                }
+                break;
+            case R.id.btn_minus:
+                for (int j = 0; j < graphs.size(); j++) {
+                    graphs.get(j).zoomOut();
+                }
+                break;
+            case R.id.btn_reset:
+                for (int j = 0; j < graphs.size(); j++) {
+                    graphs.get(j).resetZoom();
+                }
+                break;
+            case R.id.RAW_btn:
+                if(isRAWEnabled){
+                    rdbtnRaw.setChecked(false);
+                    isRAWEnabled=false;
+                }else if(!isRAWEnabled){
+                    rdbtnRaw.setChecked(true);
+                    isRAWEnabled=true;
+                }
                 break;
         }
     }
@@ -259,14 +348,16 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
             switch (msg.what) {
                 case BitalinoCommunicationService.MSG_SEND_FRAME:
                     Bundle bf =msg.getData();
-                    BITalinoFrame frame=bf.getParcelable("Frame");
-                    appendData(frame);
-
+                    BITalinoFrame frames=bf.getParcelable("Frame");
+                    appendData(frames);
+                    recordingStarted=true;
                     break;
+
                 case BitalinoCommunicationService.MSG_SEND_CONNECTION_OFF:
                     Toast.makeText(getApplicationContext(),"Device Disconnected",Toast.LENGTH_SHORT).show();
-
+                    isConnected=false;
                     break;
+
                 case BitalinoCommunicationService.MSG_ERROR:
                     switch(msg.arg1){
                         case BitalinoCommunicationService.CODE_ERROR_TXT:
@@ -276,9 +367,15 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
                             Log.d(TAG,"SAVING_ERROR");
                     }
                     break;
+
                 case BitalinoCommunicationService.MSG_SEND_CONNECTION_ON:
                     progressDialogConnecting.dismiss();
+                    if(!recordingStarted){
+                        alertDialogConnected.show();
+                    }
+                    isConnected=true;
                     break;
+
                 case BitalinoCommunicationService.MSG_SEND_LOCATION:
                     Bundle bl=msg.getData();
                     Location location=bl.getParcelable("Location");
@@ -290,31 +387,27 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
         }
     }
     private void appendData(BITalinoFrame frame) {
-        if (samplingCounter++ >= samplingFrames) {
-            //float[] conVal=frameTransFunc.getConvertedValues(frame);
             // calculates x value of graphs
             timeCounter++;
-            xValue = (float)(timeCounter* 1000) / mConfiguration.getVisualizationRate();
+        if (isVisible) {
+            float f;
+            float[] ftemp=new float[6];            xValue = (float) (timeCounter * 1000) / mConfiguration.getVisualizationRate();
             // gets default share preferences with multi-process flag
-            if(isVisible) {
+
                 for (int i = 0; i < graphs.size(); i++) {
-                    if (isViewVisible(graphs.get(i).getGraphView())) {
-                        float f = frame.getAnalog(mConfiguration.recordingChannels[i]);
-                        //float f=(float)frame.getAnalog(mConfiguration.activeChannels[i]);
-                        Entry entry = new Entry(xValue, f);
-                        graphs.get(i).addEntry(entry);
-                    }
+                    if(!isRAWEnabled){
+                        ftemp=frameTransFunc.getConvertedValues(frame);
+                        f=ftemp[i];
+                    }else f = frame.getAnalog(mConfiguration.recordingChannels[i]);
+                        graphs.get(i).addEntry(xValue,f);
                 }
             }
-            samplingCounter -= samplingFrames;
-        }
     }
     private boolean isViewVisible(View view) {
         Rect scrollBounds = new Rect();
         scrollView.getHitRect(scrollBounds);
         //float top = view.getY();
         //float bottom = top + view.getHeight();
-
         //if (scrollBounds.top <= top && scrollBounds.bottom >= bottom) {
         if(view.getLocalVisibleRect(scrollBounds)){
             return true;

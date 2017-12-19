@@ -15,10 +15,15 @@ public class FrameTransferFunction {
     private static float twoToTheNOne=1024;
     private static float twoToTheNTwo=64;
     private static double vcc= 3.3;
+    private float n;
 
 
     public FrameTransferFunction(ChannelConfiguration mChannelConfig){
         this.mChannelConfig=mChannelConfig;
+        if(mChannelConfig.getActiveChannels().length>4){
+            n=twoToTheNTwo;
+        }
+        else n=twoToTheNOne;
     }
 
     public float[] getConvertedValues(BITalinoFrame frame){
@@ -27,21 +32,21 @@ public class FrameTransferFunction {
             float f=(float)frame.getAnalog(mChannelConfig.activeChannels[i]);
             switch (mChannelConfig.activeChannelsNames[i]){
                 case "EMG":
-                    float temp1= (float) ((f/twoToTheNOne)-0.5);
+                    float temp1= (float) ((f/n)-0.5);
                     temp1= (float) (temp1*vcc*1000);
                     temp1=temp1/1009;
                     temp1=round(temp1,2);
                     convertedValues[i]=temp1;
                     break;
                 case "ECG":
-                    float temp2= (float) ((f/twoToTheNOne)-0.5);
+                    float temp2= (float) ((f/n)-0.5);
                     temp2= (float) (temp2*vcc*1000);
                     temp2=temp2/1100;
                     temp2=round(temp2,2);
                     convertedValues[i]=temp2;
                     break;
                 case "EDA":
-                    float temp3=(f/twoToTheNOne);
+                    float temp3=(f/n);
                     temp3= (float) (temp3*vcc);
                     temp3= (float) (temp3-0.574);
                     temp3= (float) (temp3/0.132);
@@ -49,7 +54,7 @@ public class FrameTransferFunction {
                     convertedValues[i]=temp3;
                     break;
                 case "EEG":
-                    float temp4= (float) ((f/twoToTheNOne)-0.5);
+                    float temp4= (float) ((f/n)-0.5);
                     temp4= (float) (temp4*vcc);
                     temp4=temp4/40000;
                     temp4=round(temp4,2);
@@ -64,7 +69,7 @@ public class FrameTransferFunction {
                     convertedValues[i]=temp5;
                     break;
                 case "LUX":
-                    float temp6=f/twoToTheNTwo;
+                    float temp6=f/n;
                     temp6=temp6*100;
                     temp6=round(temp6,2);
                     convertedValues[i]=temp6;

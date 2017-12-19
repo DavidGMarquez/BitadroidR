@@ -141,14 +141,13 @@ public class BitalinoDataService extends Service {
         // The service is no longer used and is being destroyed
         unregisterReceiver(updateReceiver);
         Log.d(TAG,"service ended");
-        Toast.makeText(this, "bth service finished",Toast.LENGTH_SHORT).show();
         //Part of code created by @author Carlos Marten Bitadroid APP BiopluxService.java
         try {
             if (!dataManager.closeWriters()) {
                 sendErrorToActivity(CODE_ERROR_SAVING);
             }
         }catch (NullPointerException e){
-            Toast.makeText(this,"Closing writers error",Toast.LENGTH_SHORT).show();
+           Log.e(TAG,"Closing writers Error");
         }
         if(connectedForRecording) {
             new Thread() {
@@ -206,7 +205,7 @@ public class BitalinoDataService extends Service {
             Toast.makeText(this, "No device or config,", Toast.LENGTH_SHORT).show();
             stopSelf();
         }
-        Toast.makeText(this, "Service started", Toast.LENGTH_SHORT).show();
+        Log.i(TAG,"Service Started");
         device=intent.getParcelableExtra("Device");
         mConfiguration=intent.getParcelableExtra("Config");
         initializeBitalinoApi();
@@ -249,7 +248,6 @@ public class BitalinoDataService extends Service {
                         Constants.States.getStates(intent.getIntExtra(Constants.EXTRA_STATE_CHANGED,0));
                 Log.i(TAG, "Device " + identifier + ": " + state.name());
                 checkConnectionState(state.name());
-                Toast.makeText(getApplicationContext(),"Device "+state.name(),Toast.LENGTH_SHORT).show();
 
             } else if (Constants.ACTION_DATA_AVAILABLE.equals(action)) {
                 BITalinoFrame frame = intent.getParcelableExtra(Constants.EXTRA_DATA);
@@ -263,7 +261,6 @@ public class BitalinoDataService extends Service {
                     BITalinoState bitaState=intent.getParcelableExtra(Constants.EXTRA_COMMAND_REPLY);
                     sendStateMessage(bitaState);
                     Log.d(TAG, "BITalinoState: " + parcelable.toString());
-                    Toast.makeText(getBaseContext(),"BitalinoState",Toast.LENGTH_LONG).show();
 
                 } else if(parcelable.getClass().equals(BITalinoDescription.class)){
                     BITalinoDescription bitaDesc=intent.getParcelableExtra(Constants.EXTRA_COMMAND_REPLY);

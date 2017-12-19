@@ -3,6 +3,7 @@ package com.polito.cesarldm.tfg_bitadroidbeta;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
@@ -11,6 +12,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Build;
 import android.os.Handler;
@@ -21,6 +23,7 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,20 +32,25 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.ImageButton;
+import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.jobs.MoveViewJob;
 import com.polito.cesarldm.tfg_bitadroidbeta.services.BitalinoCommunicationService;
 import com.polito.cesarldm.tfg_bitadroidbeta.services.GPSService;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.ChannelConfiguration;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.FrameTransferFunction;
+import com.polito.cesarldm.tfg_bitadroidbeta.vo.Linechart;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.LowPassFilter;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.MPAndroidGraph;
+import com.polito.cesarldm.tfg_bitadroidbeta.vo.RecordingNotificationBuilder;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.SignalFilter;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 
 import info.plux.pluxapi.bitalino.BITalinoFrame;
@@ -52,19 +60,22 @@ import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 public class ShowSingleDataActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener,View.OnLongClickListener {
     static final String TAG="SHOW DATA ACTIVITY";
     //UI
-    ImageButton btnStart, btnStop,btnEnd;
-    Button btnMap;
+    ImageButton btnStart, btnStop,btnEnd,btnZoomIn,btnZoomOut;
+    Button btnMap,btnZoomReset;
+    RadioButton rdbtnRaw;
     SeekBar sbUpTh;
     ArrayList<BITalinoFrame> frames=new ArrayList<BITalinoFrame>();
     ArrayList<Location> locations=new ArrayList<Location>();
     TextView tvMax,tvMin,tvAvg,tvSel,tvSbVal,tvLoc;
     //ArrayList<MPAndroidGraph> graphs=new ArrayList<MPAndroidGraph>();
     MPAndroidGraph mpAndroidGraph;
+    Linechart linechart;
     float outPut;
     //ListView graphList;
     FrameTransferFunction frameTransFunc;
+    RecordingNotificationBuilder mNotifierBuilder;
 
-
+    boolean recordingStarted=false;
     private double samplingFrames;
     private double samplingCounter = 0;
     private double timeCounter = 0;
@@ -79,6 +90,7 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
     boolean mBound;
     boolean isVisible;
     boolean isConnected=false;
+    boolean isRAWEnabled;
     private final Messenger activityMessenger = new Messenger(new ShowSingleDataActivity.IncomingHandler());
     Messenger mService = null;
     private LayoutInflater inflater;
@@ -87,7 +99,7 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
     private LowPassFilter mLowPasFilter;
     float sumForAvg=0;
     private float yMax,yMin,avg;
-    private AlertDialog alertDialogCheckEnd;
+    private AlertDialog alertDialogCheckEnd, alertDialogConnected;
     Chronometer chrono;
 
 
@@ -121,6 +133,16 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
             btnStop.setOnClickListener(this);
             btnMap=(Button) findViewById(R.id.bt_SSDA_map);
             btnMap.setOnClickListener(this);
+            btnZoomIn=(ImageButton)findViewById(R.id.btn_plus);
+            btnZoomIn.setOnClickListener(this);
+            btnZoomReset=(Button) findViewById(R.id.btn_reset);
+            btnZoomReset.setOnClickListener(this);
+            btnZoomOut=(ImageButton) findViewById(R.id.btn_minus);
+            btnZoomOut.setOnClickListener(this);
+            rdbtnRaw=(RadioButton)findViewById(R.id.RAW_btn);
+            rdbtnRaw.setOnClickListener(this);
+            rdbtnRaw.setChecked(true);
+            isRAWEnabled=true;
             Intent intent = new Intent(this, BitalinoCommunicationService.class);
             intent.putExtra("Device", device);
             intent.putExtra("Config", mConfiguration);
@@ -134,6 +156,7 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
             progressDialogConnecting=new ProgressDialog(ShowSingleDataActivity.this);
             progressDialogConnecting.setMessage("Connecting to Bitalino");
             frameTransFunc=new FrameTransferFunction(mConfiguration);
+            mNotifierBuilder=new RecordingNotificationBuilder(this,2,getClass());
 
         }else {
             Toast.makeText(this, "No device selected ", Toast.LENGTH_SHORT).show();
@@ -142,17 +165,18 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
 
     }
     private void setActivityLayout() {
-
         ViewGroup.LayoutParams layoutParams=new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        mpAndroidGraph=new MPAndroidGraph(this,mConfiguration,0);
+        linechart=new Linechart(this,mConfiguration,0);
+        //mpAndroidGraph=new MPAndroidGraph(this,mConfiguration,0);
         RelativeLayout rl=(RelativeLayout)findViewById(R.id.relativeLayout_SSDA);
         rl.setClickable(true);
         rl.setLongClickable(true);
         rl.setOnLongClickListener(this);
         rl.setOnClickListener(this);
-        mpAndroidGraph.getGraphView().setLayoutParams(layoutParams);
-        rl.addView(mpAndroidGraph.getGraphView());
-        mSignalFilter=new SignalFilter((mpAndroidGraph));
+        linechart.getGraphView().setLayoutParams(layoutParams);
+        rl.addView(linechart.getGraphView());
+        //mpAndroidGraph.getGraphView().setLayoutParams(layoutParams);
+        mSignalFilter=new SignalFilter((linechart));
         mLowPasFilter=new LowPassFilter();
         sbUpTh=(SeekBar)findViewById(R.id.sb_SSDA_aboveTH);
         sbUpTh.setOnSeekBarChangeListener(this);
@@ -160,22 +184,39 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
     }
     private void alertDialogInitiate() {
         alertDialogCheckEnd=new AlertDialog.Builder(ShowSingleDataActivity.this).create();
-        alertDialogCheckEnd.setTitle("Warning");
-        alertDialogCheckEnd.setMessage("Are you sure you want to stop the current recording?");
-        alertDialogCheckEnd.setButton("YES",new DialogInterface.OnClickListener(){
+        alertDialogCheckEnd.setTitle(Html.fromHtml("<font color='#F44E42'>Warning</font>"));
+        alertDialogCheckEnd.setMessage(Html.fromHtml("<font color='#F44E42'>Are you sure you want to stop the current recording?</font>"));
+        alertDialogCheckEnd.setButton(Dialog.BUTTON_POSITIVE,Html.fromHtml("<font color='#F44E42'>YES</font>"),new DialogInterface.OnClickListener(){
             public void onClick(DialogInterface dialog,int which){
+                mNotifierBuilder.closeNotification();
                 endActivity();
 
             }
         });
-        alertDialogCheckEnd.setButton2("NO",new DialogInterface.OnClickListener(){
+
+        alertDialogCheckEnd.setButton(Dialog.BUTTON_NEGATIVE,Html.fromHtml("<font color='#F44E42'>NO</font>"),new DialogInterface.OnClickListener(){
             public void onClick(DialogInterface dialog,int which){
-
-
             }
         });
-        alertDialogCheckEnd.setIcon(R.drawable.ic_warning_notice);
+        alertDialogCheckEnd.setOnShowListener( new DialogInterface.OnShowListener() {
+                                      @Override
+                                      public void onShow(DialogInterface arg0) {
+                                          alertDialogCheckEnd.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.colorAlert));
+                                          alertDialogCheckEnd.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.colorAlert));
+                                      }
+                                  });
 
+        alertDialogCheckEnd.setIcon(R.drawable.ic_fail);
+
+        alertDialogConnected=new AlertDialog.Builder(ShowSingleDataActivity.this).create();
+        alertDialogConnected.setTitle("Device Connected");
+        alertDialogConnected.setMessage("Press Play to start recording");
+        alertDialogConnected.setButton("OK",new DialogInterface.OnClickListener(){
+            public void onClick(DialogInterface dialog,int which){
+            }
+        });
+
+        alertDialogConnected.setIcon(R.drawable.ic_check);
     }
 
     @Override
@@ -198,6 +239,7 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
     protected void onPause(){
         super.onPause();
         isVisible=false;
+        linechart.cleanPool();
     }
     @Override
     protected void onStop() {
@@ -210,16 +252,24 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
         if(mBound) {
             unbindService(mConnection);
         }
+        MoveViewJob.getInstance(null,0f,0f,null,null);
         Intent intent = new Intent(this, BitalinoCommunicationService.class);
         stopService(intent);
 
     }
     @Override
     public void onBackPressed(){
-        //super.onBackPressed();
-        alertDialogCheckEnd.show();
+        if(recordingStarted) {
+            alertDialogCheckEnd.show();
+
+        }else{
+            mNotifierBuilder.closeNotification();
+            endActivity();
+        }
     }
     private void endActivity() {
+        Intent gpsIntentEnd=new Intent(this,GPSService.class);
+        stopService(gpsIntentEnd);
         this.finish();
     }
 
@@ -232,19 +282,25 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
                 chrono.start();
                 Intent gpsIntent=new Intent(this,GPSService.class);
                 startService(gpsIntent);
+                mNotifierBuilder.launchNotification();
                 break;
             case R.id.btn_SSDA_stop:
                 stopRecording();
-                Intent gpsIntentStop=new Intent(this,GPSService.class);
-                stopService(gpsIntentStop);
-                timeWhenStopped=chrono.getBase()- SystemClock.elapsedRealtime();
-                chrono.stop();
-                break;
-            case R.id.btn_SSDA_end:
                 Intent gpsIntentEnd=new Intent(this,GPSService.class);
                 stopService(gpsIntentEnd);
-                alertDialogCheckEnd.show();
-                mpAndroidGraph.saveAsImage();
+                timeWhenStopped=chrono.getBase()- SystemClock.elapsedRealtime();
+                chrono.stop();
+                mNotifierBuilder.closeNotification();
+                break;
+            case R.id.btn_SSDA_end:
+                if(recordingStarted) {
+                    alertDialogCheckEnd.show();
+
+                }else{
+                    mNotifierBuilder.closeNotification();
+                    endActivity();
+                }
+
                 break;
             case R.id.bt_SSDA_map:
                 Intent iMap=new Intent (this,PopMapActivity.class);
@@ -254,14 +310,36 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
                 startActivity(iMap);
                 break;
             case R.id.relativeLayout_SSDA:
-                tvSel.setText("Y: "+Float.toString(mpAndroidGraph.getSelectedValue().getY()));
+                tvSel.setText("Y: "+Float.toString(linechart.getSelectedValue().getY()));
                 break;
+            case R.id.btn_plus:
+                    linechart.zoomIn();
+
+                break;
+            case R.id.btn_minus:
+                    linechart.zoomOut();
+
+                break;
+            case R.id.btn_reset:
+                   linechart.resetZoom();
+
+                break;
+            case R.id.RAW_btn:
+                if(isRAWEnabled){
+                    rdbtnRaw.setChecked(false);
+                    isRAWEnabled=false;
+                }else if(!isRAWEnabled){
+                    rdbtnRaw.setChecked(true);
+                    isRAWEnabled=true;
+                }
+                break;
+
         }
 
     }
     @Override
     public boolean onLongClick(View v) {
-        mpAndroidGraph.saveAsImage();
+        //linechart.saveAsImage();
         return false;
     }
 
@@ -301,9 +379,11 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
                     final BITalinoFrame frame=b.getParcelable("Frame");
                     appendData(frame);
                     dataCheckCount++;
+                    recordingStarted=true;
                     break;
                 case BitalinoCommunicationService.MSG_SEND_CONNECTION_OFF:
                     Toast.makeText(getApplicationContext(),"Device Disconnected",Toast.LENGTH_SHORT).show();
+                    isConnected=false;
                     break;
                 case BitalinoCommunicationService.MSG_ERROR:
                     switch(msg.arg1){
@@ -316,6 +396,10 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
                     break;
                 case BitalinoCommunicationService.MSG_SEND_CONNECTION_ON:
                     progressDialogConnecting.dismiss();
+                    if(!recordingStarted){
+                        alertDialogConnected.show();
+                    }
+                    isConnected=true;
                     break;
                 case BitalinoCommunicationService.MSG_SEND_LOCATION:
                     Bundle bl=msg.getData();
@@ -330,53 +414,45 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
     }
 
     private void appendData(BITalinoFrame frame) {
-        float f;
-        int position=mConfiguration.recordingChannels[0];
-        if (samplingCounter++ >= samplingFrames) {
-            timeCounter++;
-            xValue = (float) (timeCounter* 1000) / mConfiguration.getVisualizationRate();
+        timeCounter++;
 
-            /** if(mSignalFilter.checkFrame(frame.getAnalog(position))) {
-             f = frame.getAnalog(position);
-             }else{
-             f=mSignalFilter.getAvg();
-             }**/
-            f = frame.getAnalog(position);
-            float tempOut=mLowPasFilter.lowPass(f,outPut);
-            outPut=tempOut;
-            if(isVisible) {
-                Entry entry=new Entry(xValue,tempOut);
-                mpAndroidGraph.addEntry(entry);
-            }
+            float[] ftemp = new float[6];
+            float f;
+            int position = mConfiguration.recordingChannels[0];
+            xValue = (float) (timeCounter * 1000) / mConfiguration.getVisualizationRate();
+            if(!isRAWEnabled){
+                ftemp=frameTransFunc.getConvertedValues(frame);
+                f=ftemp[0];
+            }else f = frame.getAnalog(position);
+            float tempOut = mLowPasFilter.lowPass(f, outPut);
+            sumForAvg = sumForAvg + f;
+            outPut = tempOut;
+        if(isVisible) {
+            linechart.addEntry(xValue, tempOut);
+        }
             if (dataCheckCount >= mConfiguration.getVisualizationRate() / 2) {
                 updateStatistics();
                 dataCheckCount = 0;
             }
 
-         /**  if (isVisible) {
-                if (mSignalFilter.checkFrame(f)) {
-                    sumForAvg += f;
-                    Entry entry = new Entry(xValue, f);
-                    mpAndroidGraph.addEntry(entry);
-                    mSignalFilter.updateValues(sumForAvg);
-                }else{
-                    f=mSignalFilter.getAvg();
-                    sumForAvg+=f;
-                    Entry entry=new Entry(xValue,f);
-                    mpAndroidGraph.addEntry(entry);
-                    mSignalFilter.updateValues(sumForAvg);
-                }
-                samplingCounter -= samplingFrames;
 
-            }**/
-        }
+
 
     }
     private void updateStatistics() {
-        tvMax.setText("Max: "+mSignalFilter.getyMax());
-        tvMin.setText("Min: "+mSignalFilter.getyMin());
-        tvAvg.setText("Avg: "+mSignalFilter.getAvg());
-        tvSel.setText("Y: "+Float.toString(mpAndroidGraph.getSelectedValue().getY()));
+        float size=linechart.getdataSize();
+        yMax=round(linechart.getYMax(),2);
+        yMin=round(linechart.getYMin(),2);
+        avg=round(sumForAvg/size,2);
+        tvMax.setText("Max: "+yMax);
+        tvMin.setText("Min: "+yMin);
+        tvAvg.setText("Avg: "+avg);
+        tvSel.setText("Y: "+Float.toString(linechart.getSelectedValue().getY()));
+    }
+    private static float round(float d, int decimalPlace) {
+        BigDecimal bd = new BigDecimal(Float.toString(d));
+        bd = bd.setScale(decimalPlace, BigDecimal.ROUND_HALF_UP);
+        return bd.floatValue();
     }
     /**
      * Class for interacting with the main interface of the service.

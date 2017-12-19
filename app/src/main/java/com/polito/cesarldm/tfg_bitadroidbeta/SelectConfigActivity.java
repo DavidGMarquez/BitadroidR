@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.polito.cesarldm.tfg_bitadroidbeta.adapters.ConfigListAdapter;
@@ -29,10 +31,12 @@ import java.util.List;
 
 public class SelectConfigActivity extends AppCompatActivity implements View.OnClickListener{
     //UI
-    Button btnNewConf;
+    FloatingActionButton btnNewConf;
+    TextView textView;
 
     //ListView configList;
     boolean isItemClicked=false;
+    boolean isItemLongClicked=false;
     RecyclerView rvConfigList;
     RVConfigListAdapter rvAdapter;
     LinearLayoutManager mLinearLM;
@@ -41,6 +45,7 @@ public class SelectConfigActivity extends AppCompatActivity implements View.OnCl
     BluetoothDevice device;
     List<ChannelConfiguration> returnedList;
     ArrayList<ChannelConfiguration> channelConfList = new ArrayList<ChannelConfiguration>();
+    int longPressedPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +56,8 @@ public class SelectConfigActivity extends AppCompatActivity implements View.OnCl
             device = null;
         }
         setContentView(R.layout.activity_select_config);
+        textView=(TextView)findViewById(R.id.tv_SC_list);
+        textView.setOnClickListener(this);
         rvConfigList = (RecyclerView) findViewById(R.id.rv);
         mLinearLM = new LinearLayoutManager(this);
         rvAdapter = new RVConfigListAdapter(this);
@@ -59,7 +66,7 @@ public class SelectConfigActivity extends AppCompatActivity implements View.OnCl
         rvConfigList.setOnClickListener(this);
 
         //configList=(ListView)findViewById(R.id.lv_SC);
-        btnNewConf = (Button) findViewById(R.id.btn_SC_new_conf);
+        btnNewConf = (FloatingActionButton) findViewById(R.id.btn_SC_new_conf);
         jsonManager = new JsonManager();
         btnNewConf.setOnClickListener(this);
         //adapter=new ConfigListAdapter(this);
@@ -79,15 +86,15 @@ public class SelectConfigActivity extends AppCompatActivity implements View.OnCl
         super.onStart();
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
         itemTouchHelper.attachToRecyclerView(rvConfigList);
-        listConfigurations();
-
 
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        listConfigurations();
         isItemClicked=false;
+        isItemLongClicked=false;
         rvConfigList.addOnItemTouchListener(new RecyclerTouchListener(this, rvConfigList, new ClickListener() {
             @Override
             public void onClick(View view, int positionClicked) {
@@ -110,10 +117,18 @@ public class SelectConfigActivity extends AppCompatActivity implements View.OnCl
                 }
 
             }
-
             @Override
             public void onLongClick(View view, int position) {
+                if(!isItemLongClicked) {
+                    isItemLongClicked = true;
+                    longPressedPosition=position;
+                    ChannelConfiguration selectedChannelConfig = rvAdapter.getSelectedCC(position);
+                        Intent intentStartSingle = new Intent(getApplicationContext(), CreateConfigActivity.class);
+                        intentStartSingle.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        intentStartSingle.putExtra("Config", selectedChannelConfig);
+                        startActivityForResult(intentStartSingle,2);
 
+                }
 
             }
         }));
@@ -145,31 +160,22 @@ public class SelectConfigActivity extends AppCompatActivity implements View.OnCl
         startActivityForResult(bthIntent, 1);
     }
 
-    /**
-     * @Override public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-     * ChannelConfiguration selectedChannelConfig=adapter.getItem(position);
-     * if(selectedChannelConfig.getRecordingChannels().length==1){
-     * Intent intentStartSingle = new Intent(this, ShowSingleDataActivity.class);
-     * intentStartSingle.putExtra("Device",device);
-     * intentStartSingle.putExtra("Config",selectedChannelConfig);
-     * startActivity(intentStartSingle);
-     * }else {
-     * Intent intentStart = new Intent(this, ShowDataActivity.class);
-     * intentStart.putExtra("Device", device);
-     * intentStart.putExtra("Config", selectedChannelConfig);
-     * startActivity(intentStart);
-     * }
-     * }
-     **/
+
+
+
+
     public void listConfigurations() {
         returnedList = jsonManager.getCurrentChannelConfigs();
-        if (returnedList != null) {
+        if (returnedList == null||returnedList.size()==0){
+            textView.setText("No configuration found, add new");
+        }else {
             channelConfList.clear();
             channelConfList.addAll(returnedList);
             rvAdapter.setArray(channelConfList);
             rvAdapter.notifyDataSetChanged();
             //adapter.setConfigArray(channelConfList);
             // adapter.notifyDataSetChanged();
+            textView.setText("Select configuration");
         }
 
     }
@@ -184,16 +190,29 @@ public class SelectConfigActivity extends AppCompatActivity implements View.OnCl
             if (resultCode == SelectDevicesActivity.RESULT_OK) {
                 Bundle b = data.getExtras();
                 ChannelConfiguration mChannelConfig = b.getParcelable("result");
-                toastMessageLong("N: " + mChannelConfig.getName() + "S.R= " + mChannelConfig.sampleRate + " Sz: " + mChannelConfig.getSize());
                 rvAdapter.addConfiguration(mChannelConfig);
                 rvAdapter.notifyDataSetChanged();
-                //adapter.addConfiguration(mChannelConfig);
-                //adapter.notifyDataSetChanged();
+
 
             }
             if (resultCode == SelectDevicesActivity.RESULT_CANCELED) {
 
                 toastMessageShort("No configuration created");
+            }
+
+        }if(requestCode==2){
+            if (resultCode == SelectDevicesActivity.RESULT_OK) {
+                Bundle b = data.getExtras();
+                ChannelConfiguration mChannelConfig = b.getParcelable("result");
+                toastMessageLong("Configuration Updated");
+                jsonManager.updateConfig(longPressedPosition,mChannelConfig);
+                rvAdapter.updateConfiguration(longPressedPosition,mChannelConfig);
+                rvAdapter.notifyDataSetChanged();
+
+            }
+            if (resultCode == SelectDevicesActivity.RESULT_CANCELED) {
+
+                toastMessageShort("No changes added");
             }
         }
     }
@@ -210,6 +229,8 @@ public class SelectConfigActivity extends AppCompatActivity implements View.OnCl
         Toast.makeText(this, a, Toast.LENGTH_LONG).show();
 
     }
+
+
 
     /**
      * @Override public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
@@ -272,6 +293,7 @@ public class SelectConfigActivity extends AppCompatActivity implements View.OnCl
     ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
         @Override
         public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+
             return false;
         }
 
@@ -284,16 +306,12 @@ public class SelectConfigActivity extends AppCompatActivity implements View.OnCl
                 AlertDialog.Builder builder = new AlertDialog.Builder(SelectConfigActivity.this); //alert for confirm to delete
                 builder.setMessage("Are you sure to delete?");    //set message
                 builder.setIcon(R.drawable.ic_warning_notice);
-
                 builder.setPositiveButton("REMOVE", new DialogInterface.OnClickListener() { //when click on DELETE
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         jsonManager.deleteConfiguration(position);
                         rvAdapter.deleteConfig(position);
-                        //listConfigurations();
-                        //rvAdapter.notifyItemRemoved(position);    //item removed from recylcerview
-                        //sqldatabase.execSQL("delete from " + TABLE_NAME + " where _id='" + (position + 1) + "'"); //query for delete
-                        //list.remove(position);  //then remove item
+                        listConfigurations();
                         return;
                     }
                 }).setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {  //not removing items if cancel is done

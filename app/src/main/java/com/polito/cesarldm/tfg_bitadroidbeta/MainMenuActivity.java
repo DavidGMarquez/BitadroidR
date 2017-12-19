@@ -47,6 +47,7 @@ public class MainMenuActivity extends AppCompatActivity  implements View.OnClick
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
         rl=(RelativeLayout)findViewById(R.id.rl_MMA);
+        rl.setOnClickListener(this);
         tvDeviceName=(TextView)findViewById(R.id.tv_MM_name);
         tvDeviceMac=(TextView)findViewById(R.id.tv_MM_mac);
         tvBattery=(TextView)findViewById(R.id.tv_battery_info);
@@ -78,7 +79,12 @@ public class MainMenuActivity extends AppCompatActivity  implements View.OnClick
             tvDeviceMac.setText(device.getAddress());
             rl.setBackgroundResource(R.drawable.bitalinofound);
         }else{
+            tvDeviceName.setText("Device not selected ");
+            tvDeviceMac.setText(null);
+            ivLogo.setImageDrawable(null);
             rl.setBackgroundResource(R.drawable.bitalinonotfound);
+            ivBattery.setImageDrawable(null);
+            tvBattery.setText(null);
         }
 
     }
@@ -99,6 +105,10 @@ public class MainMenuActivity extends AppCompatActivity  implements View.OnClick
         super.onDestroy();
 
     }
+    @Override
+    public void onBackPressed(){
+       finish();
+    }
 
     @Override
     public void onClick(View v) {
@@ -106,6 +116,11 @@ public class MainMenuActivity extends AppCompatActivity  implements View.OnClick
             case R.id.btn_MM_scan:
                 Intent bthIntent=new Intent(this,SelectDevicesActivity.class);
                 startActivityForResult(bthIntent,BLUETOOTH_INTENT);
+                overridePendingTransition(R.animator.enter,R.animator.exit);
+                break;
+            case R.id.rl_MMA:
+                Intent imageIntent=new Intent(this,SelectDevicesActivity.class);
+                startActivityForResult(imageIntent,BLUETOOTH_INTENT);
                 overridePendingTransition(R.animator.enter,R.animator.exit);
                 break;
             case R.id.btn_MM_start_recordings:
@@ -119,12 +134,16 @@ public class MainMenuActivity extends AppCompatActivity  implements View.OnClick
                 startActivity(recordIntent);
                 break;
             case R.id.btn_MM_ECG:
-                Intent hMIntent =new Intent(this,HeartMonitorActivity.class);
+                Intent ccintent=new Intent (this, CtreateHMConfigActivity.class);
+                ccintent.putExtra("Device",device);
+                startActivity(ccintent);
+                /**Intent hMIntent =new Intent(this,HeartMonitorActivity.class);
                 ChannelConfiguration heartMonitor=new ChannelConfiguration("Heart Monitor",new int[]
                         {1},new int[] {1},100,new String[] {"ECG"},new String[] {"ECG"});
                 hMIntent.putExtra("Device",device);
                 hMIntent.putExtra("Config",heartMonitor);
                 startActivity(hMIntent);
+                **/
         }
 
     }
@@ -142,16 +161,14 @@ public class MainMenuActivity extends AppCompatActivity  implements View.OnClick
                 Bundle b=data.getExtras();
                 device=b.getParcelable("result");
                 deviceDesc=b.getParcelable("Desc");
-                toastMessageLong(deviceDesc.toString());
                 if(data.hasExtra("State")){
                     deviceState=b.getParcelable("State");
                     displayBatteryInfo(deviceState.getBattery());
-                    toastMessageLong(deviceState.toString());
                 }else{
                     ivBattery.setImageResource(R.drawable.ic_battery_unknown);
                 }
                 //connect
-                toastMessageShort(device.getName() + ", MAC= " + device.getAddress());
+
             }
             if (resultCode == SelectDevicesActivity.RESULT_CANCELED) {
                 device=null;
@@ -162,17 +179,22 @@ public class MainMenuActivity extends AppCompatActivity  implements View.OnClick
     }
 
     private void displayBatteryInfo(int battery) {
-        int currentBat=battery/10;
-        if(battery<=200){
-           ivBattery.setImageResource(R.drawable.ic_battery_20);
-        }else if(battery<=500){
+
+        if(battery<=500){
+           ivBattery.setImageResource(R.drawable.ic_battery_0);
+        }else if(battery<=525) {
+            ivBattery.setImageResource(R.drawable.ic_battery_20);
+        }else if(battery<=562){
             ivBattery.setImageResource(R.drawable.ic_battery_50);
-        }else if(battery<=800){
+        }else if(battery<=593){
             ivBattery.setImageResource(R.drawable.ic_battery_80);
         }else{
             ivBattery.setImageResource(R.drawable.ic_battery_100);
         }
-            tvBattery.setText(currentBat+"%");
+        int currentBat=((battery-500)*100)/124;
+        if(currentBat<0)currentBat=0;
+        if(currentBat>100)currentBat=100;
+        tvBattery.setText(currentBat+"%");
     }
 
     private void runtimeLocationPermissions() {

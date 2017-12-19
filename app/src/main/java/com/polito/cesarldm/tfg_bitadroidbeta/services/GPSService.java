@@ -40,7 +40,7 @@ public class GPSService extends Service {
         {
             Log.e(TAG, "onLocationChanged: " + location);
             mLastLocation.set(location);
-            toastMessageShort("LOCATION: "+location.getLatitude()+" "+location.getLongitude());
+            Log.i(TAG,"LOCATION: "+location.getLatitude()+" "+location.getLongitude());
             Intent intent=new Intent();
             intent.setAction("com.location.Broadcast");
             intent.putExtra("Location",location);
@@ -74,7 +74,7 @@ public class GPSService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startID) {
-        toastMessageShort("Location service started");
+        Log.i(TAG, "\"Location service started\"");
         return START_NOT_STICKY;
     }
 
@@ -139,7 +139,7 @@ public class GPSService extends Service {
                 }
             }
         }
-        toastMessageShort("Location service stopped");
+        Log.i(TAG,"Location service stopped");
     }
 
 

@@ -9,4 +9,5 @@
     <color name="colorSecondaryLight">#bff76d</color>
     <color name="colorBackground">#cccccc</color>
     <color name="colorBackgroundLight">#F0F0F0</color>
+    <color name="colorAlert">#F44E42 </color>
 </resources>

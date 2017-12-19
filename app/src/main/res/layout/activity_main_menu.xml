@@ -4,109 +4,83 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.polito.cesarldm.tfg_bitadroidbeta.MainMenuActivity"
-    android:background="@color/colorBackground">
-
+    tools:context="com.polito.cesarldm.tfg_bitadroidbeta.MainMenuActivity">
 
 
     <Button
         android:id="@+id/btn_MM_start_recordings"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:text="Custom Recording"
-        android:elevation="5dp"
-        android:textColor="@color/colorBackground"
-        android:background="@drawable/elevated_button_shape"
-        android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginLeft="8dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="33dp"
-        app:layout_constraintTop_toBottomOf="@+id/rl_MMA"
-        android:drawableLeft="@drawable/ic_custom_recording"/>
+        android:background="@drawable/elevated_button_shape"
+        android:drawableLeft="@drawable/ic_custom_recording"
+        android:elevation="5dp"
+        android:padding="10dp"
+        android:text="Record"
+        android:textColor="@color/colorBackground"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/rl_MMA" />
+
     <Button
         android:id="@+id/btn_MM_show_recordings"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
-        android:text="Show Recordings"
+        android:layout_marginEnd="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/elevated_button_shape"
+        android:drawableLeft="@drawable/ic_files"
         android:elevation="5dp"
         android:padding="10dp"
+        android:text="Show Recordings"
         android:textColor="@color/colorBackground"
-        android:background="@drawable/elevated_button_shape"
-        android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginLeft="8dp"
         app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginTop="30dp"
-        app:layout_constraintTop_toBottomOf="@+id/btn_MM_ECG"
-        android:drawableLeft="@drawable/ic_files"/>
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btn_MM_ECG" />
 
     <Button
         android:id="@+id/btn_MM_ECG"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
-        android:text="Heart monitor"
-        android:padding="10dp"
-        android:elevation="5dp"
-        android:textColor="@color/colorBackground"
-        android:background="@drawable/elevated_button_shape"
-        android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginLeft="8dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginTop="34dp"
-        app:layout_constraintTop_toBottomOf="@+id/btn_MM_start_recordings"
-        android:drawableLeft="@drawable/ic_heart"/>
-
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/btn_MM_scan"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:clickable="true"
-        android:elevation="15dp"
-        app:fabSize="mini"
-        app:srcCompat="?android:attr/actionModeWebSearchDrawable"
-        android:tint="@color/colorBackground"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginBottom="8dp"
         android:layout_marginLeft="8dp"
-        app:layout_constraintLeft_toLeftOf="parent"
         android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintHorizontal_bias="0.899"
-        app:layout_constraintVertical_bias="0.422"
         android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp" />
+        android:layout_marginTop="34dp"
+        android:background="@drawable/elevated_button_shape"
+        android:drawableLeft="@drawable/ic_heart"
+        android:elevation="5dp"
+        android:padding="10dp"
+        android:text="Heart monitor"
+        android:textColor="@color/colorBackground"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btn_MM_start_recordings" />
+
 
     <RelativeLayout
         android:id="@+id/rl_MMA"
         android:layout_width="0dp"
         android:layout_height="230dp"
-        android:padding="5dp"
         android:elevation="5dp"
-        app:layout_constraintBottom_toTopOf="@+id/btn_MM_scan"
+        android:padding="5dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0">
-
+        app:layout_constraintTop_toTopOf="parent">
 
 
         <ImageView
             android:id="@+id/imageViewBitaText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-           android:layout_alignParentTop="true"
+            android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
             android:layout_marginLeft="10dp"
             android:padding="5dp" />
@@ -124,10 +98,10 @@
             android:id="@+id/tv_MM_mac"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
             android:layout_below="@+id/tv_MM_name"
-            android:textSize="20dp"
-            android:textColor="@color/colorPrimary"/>
+            android:layout_centerHorizontal="true"
+            android:textColor="@color/colorPrimary"
+            android:textSize="20dp" />
 
         <TextView
             android:id="@+id/tv_battery_info"
@@ -135,17 +109,39 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
-            android:textSize="30dp"
-            android:textColor="@color/colorPrimary"/>
+            android:textColor="@color/colorPrimary"
+            android:textSize="30dp" />
+
         <ImageView
             android:id="@+id/imageViewBattery"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_toStartOf="@+id/tv_battery_info"
-            android:tint="@color/colorAccent"/>
+            android:tint="@color/colorAccent" />
 
     </RelativeLayout>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/btn_MM_scan"
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:clickable="true"
+        android:elevation="15dp"
+        android:focusable="true"
+        android:tint="@color/colorBackgroundLight"
+        app:fabSize="mini"
+        app:layout_constraintBottom_toBottomOf="@+id/rl_MMA"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.955"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0"
+        app:srcCompat="@drawable/ic_bth_search" />
 
 
 </android.support.constraint.ConstraintLayout>

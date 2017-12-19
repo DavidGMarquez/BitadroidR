@@ -12,18 +12,18 @@ public class SignalFilter {
 
     private float yMax,yMin,avg, sumForAvg;
     private float upThreshold,downThreshold;
-    private MPAndroidGraph mpAndroidGraph;
+    private Linechart linechart;
 
-    public SignalFilter(MPAndroidGraph mpAndroidGraph){
-        this.mpAndroidGraph=mpAndroidGraph;
+    public SignalFilter(Linechart linechart){
+        this.linechart=linechart;
         this.upThreshold=0;
         this.downThreshold=1;
         sumForAvg=0;
     }
     public void updateValues(float sumForAvg){
-        float size=mpAndroidGraph.getDataSetSize();
-        yMax=mpAndroidGraph.getYMax();
-        yMin=mpAndroidGraph.getYMin();
+        float size=linechart.getDataSetSize();
+        yMax=linechart.getYMax();
+        yMin=linechart.getYMin();
         avg=sumForAvg/size;
         avg=round(avg,2);
 
@@ -81,12 +81,12 @@ public class SignalFilter {
         this.downThreshold=1-downThreshold;
     }
 
-    public MPAndroidGraph getMpAndroidGraph() {
-        return mpAndroidGraph;
+    public Linechart getLinechart() {
+        return linechart;
     }
 
-    public void setMpAndroidGraph(MPAndroidGraph mpAndroidGraph) {
-        this.mpAndroidGraph = mpAndroidGraph;
+    public void setLinechart(Linechart linechart) {
+        this.linechart = linechart;
     }
 
     public boolean checkFrame(float value){

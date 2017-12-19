@@ -36,12 +36,12 @@ public class JsonManager {
     private static String jString;
     private static String prevPath=Environment.getExternalStorageDirectory()+Constants.APP_DIRECTORY;
     private static String path= Environment.getExternalStorageDirectory()+Constants.APP_DIRECTORY+"/ChannelConfig/";
-    private ChannelConfiguration mConf;
-    List<ChannelConfiguration> configList;
-    Gson gson;
+
+    private List<ChannelConfiguration> configList;
+    private Gson gson;
     private FileOutputStream outputStream;
     OutputStreamWriter mOutWriter;
-    Context context;
+    private Context context;
 
 
 
@@ -52,7 +52,6 @@ public class JsonManager {
 
     public JsonManager(Context context,ChannelConfiguration mChannelConf) {
         this.gson = new Gson();
-        this.mConf = mChannelConf;
         this.context = context;
         List<ChannelConfiguration> templist = this.getCurrentChannelConfigs();
         if (templist == null) {
@@ -79,8 +78,6 @@ public class JsonManager {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
-
         }
     }
 
@@ -114,12 +111,23 @@ public class JsonManager {
             }
             return configList;
         }
+
         public void deleteConfiguration(int position){
             this.gson=new Gson();
             List<ChannelConfiguration> tempList = this.getCurrentChannelConfigs();
             tempList.remove(position);
             Log.d(TAG, "deleteConfiguration: configuration deleted");
             updateChannelConfigFile(tempList);
+        }
+
+        public void updateConfig(int position,ChannelConfiguration newChannelConf){
+            this.gson=new Gson();
+            List<ChannelConfiguration> tempList = this.getCurrentChannelConfigs();
+            tempList.remove(position);
+            tempList.add(position,newChannelConf);
+            Log.d(TAG, "updateConfiguration: configuration updated");
+            updateChannelConfigFile(tempList);
+
         }
     }
 

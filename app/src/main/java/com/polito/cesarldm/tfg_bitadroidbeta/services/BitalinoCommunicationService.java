@@ -1,6 +1,7 @@
 package com.polito.cesarldm.tfg_bitadroidbeta.services;
 
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothDevice;
@@ -18,14 +19,19 @@ import android.os.Parcelable;
 import android.os.PowerManager;
 import android.os.RemoteException;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.github.mikephil.charting.data.Entry;
+import com.polito.cesarldm.tfg_bitadroidbeta.MainMenuActivity;
 import com.polito.cesarldm.tfg_bitadroidbeta.R;
 import com.polito.cesarldm.tfg_bitadroidbeta.ShowDataActivity;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.ChannelConfiguration;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.DataManager;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.SignalFilter;
+
+import java.util.ArrayList;
 
 import info.plux.pluxapi.Communication;
 import info.plux.pluxapi.Constants;
@@ -55,6 +61,8 @@ public class BitalinoCommunicationService extends Service {
     public static final int MSG_ERROR=15;
     public static final int MSG_SAVED=16;
     public static final int MSG_SEND_LOCATION=17;
+    public static final int MSG_SEND_BPM_RR=18;
+
 
     private boolean isConnected=false;
     private boolean isRecording=false;
@@ -70,8 +78,13 @@ public class BitalinoCommunicationService extends Service {
     private BITalinoState bitaState;
     private Notification serviceNotification=null;
     private PowerManager.WakeLock wakeLock=null;
-
-
+    ArrayList<Entry> rrValues=new ArrayList<Entry>();
+    ArrayList<Entry> bpmValues=new ArrayList<Entry>();
+    NotificationManager nManager;
+    private int freqMsg;
+    private int frameCount=0;
+    private int msgCount=0;
+    private ArrayList<BITalinoFrame> framePack=new ArrayList<BITalinoFrame>();
 
     public static final int CODE_ERROR_SAVING=8;
 
@@ -86,7 +99,24 @@ public class BitalinoCommunicationService extends Service {
         wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
                 "MyWakelockTag");
         wakeLock.acquire();
+
+        setNotifications();
+
         return START_NOT_STICKY;
+
+    }
+
+    private void setNotifications() {
+        nManager=(NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        android.support.v4.app.NotificationCompat.Builder noticeActive=
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_play)
+                        .setContentTitle("Bitadroid recording")
+                        .setContentText("Active");
+        Notification noti=new Notification(R.drawable.ic_play,"recording",System.currentTimeMillis());
+        PendingIntent resultIntent=PendingIntent.getActivity(getApplicationContext(),0,new Intent(this, MainMenuActivity.class),0);
+
+
     }
 
     @Override
@@ -98,14 +128,13 @@ public class BitalinoCommunicationService extends Service {
         // The service is no longer used and is being destroyed
         unregisterReceiver(updateReceiver);
         Log.d(TAG,"service ended");
-        Toast.makeText(this, "bth service finished",Toast.LENGTH_SHORT).show();
         //Part of code created by @author Carlos Marten Bitadroid APP BiopluxService.java
         try {
             if (!dataManager.closeWriters()) {
                 sendErrorToActivity(CODE_ERROR_SAVING);
             }
         }catch (NullPointerException e){
-            Toast.makeText(this,"Closing writers error",Toast.LENGTH_SHORT).show();
+
         }
             if(isRecordMade) {
                 new Thread() {
@@ -158,7 +187,7 @@ class IncomingHandler extends Handler {
                 if(bitaDesc!=null) {
                     sendBitalinoDescription();
                 }else{
-                    Toast.makeText(getApplicationContext(),"Description not available",Toast.LENGTH_SHORT).show();
+                   Log.i(TAG,"Bitalino description Unavailable");
                 }
 
                 break;
@@ -167,7 +196,7 @@ class IncomingHandler extends Handler {
                     sendBitalinoState();
                 }else{
                     requestState();
-                    Toast.makeText(getApplicationContext(),"State not available",Toast.LENGTH_SHORT).show();
+                    Log.i(TAG,"Bitalino state unavailable");
                     sendNoticeToUser("State not available");
                 }
 
@@ -196,7 +225,23 @@ class IncomingHandler extends Handler {
                 }else{
                     sendConnectionOFF();
                 }
+                break;
+            case MSG_SEND_BPM_RR:
+                float temprr,tempbpm;
+                tempbpm=msg.getData().getFloat("bpm");
+                temprr=msg.getData().getFloat("rr");
+                if (!dataManager.writeBPMToTmpFile(temprr,tempbpm)) {
+                    sendErrorToActivity(CODE_ERROR_TXT);
+                    killServiceError = true;
+                    stopSelf();
+                }else {
+                   Log.d(TAG,"BPMRR info sent to DATA MANAGER");
+                }
 
+                mClient=msg.replyTo;
+                if(dataManager!=null){
+                   // dataManager.addHMFiles(bpmValues,rrValues);
+                }
                 break;
             default:
                 super.handleMessage(msg);
@@ -221,7 +266,7 @@ class IncomingHandler extends Handler {
     private void requestState(){
         try {
             if(!bitaCom.state()){
-                Toast.makeText(this,"No state available",Toast.LENGTH_SHORT).show();
+
             }
         } catch (BITalinoException e) {
             e.printStackTrace();
@@ -229,6 +274,11 @@ class IncomingHandler extends Handler {
     }
 
     private void startRecording() {
+        if(mConfiguration.getVisualizationRate()>=100){
+            freqMsg=10;
+        }else{
+            freqMsg=1;
+        }
         dataManager=new DataManager(getApplicationContext(),mConfiguration.getName(),mConfiguration,device);
         createNotification();
         try {
@@ -310,13 +360,16 @@ class IncomingHandler extends Handler {
         }
 
     }
-    private void sendFrames( BITalinoFrame frame) {
-        Bundle b=new Bundle();
-        b.putParcelable("Frame", frame);
-        Message message = Message.obtain(null, MSG_SEND_FRAME,0,0);
+    private void sendFrame(BITalinoFrame frame) {
+
+        Bundle b = new Bundle();
+        b.putParcelable("Frame",frame);
+        Message message = Message.obtain(null, MSG_SEND_FRAME, 0, 0);
         message.setData(b);
         try {
             mClient.send(message);
+            framePack.clear();
+            msgCount=0;
         } catch (NullPointerException e) {
             e.printStackTrace();
         } catch (RemoteException e) {
@@ -347,8 +400,6 @@ class IncomingHandler extends Handler {
                         Constants.States.getStates(intent.getIntExtra(Constants.EXTRA_STATE_CHANGED,0));
                 Log.i(TAG, "Device " + identifier + ": " + state.name());
                 checkConnectionState(state.name());
-
-
             } else if (Constants.ACTION_DATA_AVAILABLE.equals(action)) {
                 BITalinoFrame frame = intent.getParcelableExtra(Constants.EXTRA_DATA);
                 Log.d(TAG, "BITalinoFrame: " + frame.toString());
@@ -361,7 +412,6 @@ class IncomingHandler extends Handler {
                     bitaState=intent.getParcelableExtra(Constants.EXTRA_COMMAND_REPLY);
                     sendBitalinoState();
                     Log.d(TAG, "BITalinoState: " + parcelable.toString());
-                    Toast.makeText(getBaseContext(),"BitalinoState",Toast.LENGTH_LONG).show();
 
                 } else if(parcelable.getClass().equals(BITalinoDescription.class)){
                    bitaDesc=intent.getParcelableExtra(Constants.EXTRA_COMMAND_REPLY);
@@ -375,9 +425,13 @@ class IncomingHandler extends Handler {
             }
             else if ("com.location.Broadcast".equals(action)){
                 Location location=intent.getParcelableExtra("Location");
-               Toast.makeText(getApplicationContext(),"location received by bitaservice",Toast.LENGTH_SHORT).show();
-                //enviar la location a la actividad
-                sendLocation(location);
+                if (!dataManager.writeLocationToTmpFile(location)) {
+                    sendErrorToActivity(CODE_ERROR_TXT);
+                    killServiceError = true;
+                    stopSelf();
+                }else {
+                    sendLocation(location);
+                }
                 //enviar a archivo de localización
 
             }
@@ -423,15 +477,7 @@ class IncomingHandler extends Handler {
                 ().getCommunication(Communication.BTH, this.getApplicationContext(), new OnBITalinoDataAvailable(){
             @Override
             public void onBITalinoDataAvailable(BITalinoFrame bitalinoFrame) {
-                Log.d(TAG, "BITalinoFrame: " + bitalinoFrame.toString());
                 if(bitalinoFrame.getSequence()!=-1) {
-                    //Part of code created by @author Carlos Marten Bitadroid APP BiopluxService.java
-                    if (!dataManager.writeFrameToTmpFile(bitalinoFrame, bitalinoFrame.getSequence())) {
-                        sendErrorToActivity(CODE_ERROR_TXT);
-                        killServiceError = true;
-                        stopSelf();
-                    }
-                    //------------------------------------------------------------------------------
                 processFrame(bitalinoFrame);
                 }else {
                     Log.d(TAG, "EMPTY FRAME");
@@ -442,13 +488,16 @@ class IncomingHandler extends Handler {
     }
 
     private void processFrame(BITalinoFrame biTalinoFrame){
-            //Part of code created by @author Carlos Marten Bitadroid APP BiopluxService.java
             if (!dataManager.writeFrameToTmpFile(biTalinoFrame, biTalinoFrame.getSequence())) {
                 sendErrorToActivity(CODE_ERROR_TXT);
                 killServiceError = true;
                 stopSelf();
-            }else{
-                sendFrames(biTalinoFrame);
+            }else {
+                frameCount++;
+                if (frameCount >= mConfiguration.getSampleRate() / mConfiguration.getVisualizationRate()) {
+                    sendFrame(biTalinoFrame);
+                        frameCount = 0;
+                }
             }
     }
 

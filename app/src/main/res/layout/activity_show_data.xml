@@ -5,23 +5,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.polito.cesarldm.tfg_bitadroidbeta.ShowDataActivity"
-    android:background="@color/colorBackground">
+    tools:layout_editor_absoluteY="81dp">
 
     <ScrollView
         android:id="@+id/sc_SD"
         android:layout_width="0dp"
-        android:layout_height="413dp"
-        android:layout_margin="10dp"
+        android:layout_height="0dp"
+        android:layout_margin="5dp"
+        android:layout_marginTop="5dp"
+        app:layout_constraintBottom_toTopOf="@+id/rv_zoom_btn"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.282">
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:id="@+id/ll_SD"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_margin="5dp"
             android:orientation="vertical"
             app:layout_constraintBottom_toTopOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -31,15 +33,14 @@
     </ScrollView>
 
     <RelativeLayout
+        android:id="@+id/relativeLayout2"
         android:layout_width="0dp"
         android:layout_height="75dp"
+        android:background="@color/colorPrimary"
+        android:elevation="5dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sc_SD"
-        app:layout_constraintVertical_bias="1.0"
-        android:background="@color/colorPrimary"
-        android:elevation="5dp">
+        app:layout_constraintRight_toRightOf="parent">
 
         <Chronometer
             android:id="@+id/chrono_SDA"
@@ -51,8 +52,8 @@
             android:format="%s"
             android:textColor="@color/colorBackground"
             android:textSize="20sp"
-            android:visibility="visible"
-            android:tint="@color/colorAccent"/>
+            android:tint="@color/colorAccent"
+            android:visibility="visible" />
 
 
         <ImageButton
@@ -61,49 +62,106 @@
             android:layout_height="60dp"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
-            android:background="@drawable/round_button"
             android:layout_margin="5dp"
+            android:background="@drawable/round_button"
             android:src="@drawable/ic_play"
-            android:tint="@color/colorAccent"/>
+            android:tint="@color/colorAccent" />
 
         <ImageButton
             android:id="@+id/btn_SDA_stop"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:background="@drawable/round_button"
-            android:layout_toStartOf="@id/btn_SDA_start"
             android:layout_alignParentBottom="true"
             android:layout_margin="5dp"
+            android:layout_toStartOf="@id/btn_SDA_start"
+            android:background="@drawable/round_button"
             android:src="@drawable/ic_pause"
-            android:tint="@color/colorAccent"
-            />
+            android:tint="@color/colorAccent" />
+
         <ImageButton
             android:id="@+id/btn_SDA_end"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:background="@drawable/round_button"
-            android:layout_toEndOf="@id/btn_SDA_start"
             android:layout_alignParentBottom="true"
             android:layout_margin="5dp"
+            android:layout_toEndOf="@id/btn_SDA_start"
+            android:background="@drawable/round_button"
             android:src="@drawable/ic_stop"
-            android:tint="@color/colorAccent"
-            />
+            android:tint="@color/colorAccent" />
+
         <Button
             android:id="@+id/bt_SDA_map"
             android:layout_width="45dp"
             android:layout_height="45dp"
-            android:layout_margin="5dp"
-            android:textSize="10sp"
-            android:textColor="@color/colorAccent"
-            android:padding="1dp"
-            android:background="@null"
-            android:layout_toStartOf="@id/btn_SDA_stop"
-            android:layout_alignParentStart="true"
             android:layout_alignParentBottom="true"
-            android:drawableTop="@drawable/ic_location"
+            android:layout_alignParentStart="true"
+            android:layout_margin="5dp"
             android:layout_marginEnd="16dp"
-            />
+            android:layout_toStartOf="@id/btn_SDA_stop"
+            android:background="@null"
+            android:drawableTop="@drawable/ic_location"
+            android:padding="1dp"
+            android:textColor="@color/colorAccent"
+            android:textSize="10sp" />
     </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/rv_zoom_btn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="2dp"
+        app:layout_constraintBottom_toTopOf="@+id/relativeLayout2"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent">
+
+        <ImageButton
+            android:id="@+id/btn_plus"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="5dp"
+            android:background="@drawable/round_button_2"
+            android:src="@drawable/ic_zoom_in"
+            />
+
+        <Button
+            android:id="@+id/btn_reset"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_toStartOf="@id/btn_plus"
+            android:background="@drawable/elevated_button_shape"
+            android:text="Reset"
+            android:textColor="@color/colorBackground"/>
+
+        <ImageButton
+            android:id="@+id/btn_minus"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_toStartOf="@id/btn_reset"
+            android:background="@drawable/round_button_2"
+            android:src="@drawable/ic_zoom_out"
+            />
+        <RadioButton
+            android:id="@+id/RAW_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="10dp"
+            android:text="RAW"
+            android:textColorHighlight="@color/colorAlert"/>
+    </RelativeLayout>
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="20dp" />
 
 
 </android.support.constraint.ConstraintLayout>

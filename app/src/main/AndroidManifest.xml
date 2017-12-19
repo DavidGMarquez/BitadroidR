@@ -18,33 +18,61 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-        <activity android:name=".MainMenuActivity">
+        android:theme="@style/AppTheme"
+        android:largeHeap="true">
+        <activity
+            android:name=".MainMenuActivity"
+            android:label="Bitadroid"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SelectDevicesActivity" />
-        <activity android:name=".SelectConfigActivity" />
-        <activity android:name=".CreateConfigActivity" />
-        <activity android:name=".ShowDataActivity" />
+        <activity
+            android:name=".SelectDevicesActivity"
+            android:label="Bluetooth search"
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".SelectConfigActivity"
+            android:label="Bitalino configurations"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".CreateConfigActivity"
+            android:label="New configuration"
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".ShowDataActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:label="Multiple channel recording"
+            android:configChanges="keyboardHidden|orientation|screenSize"/>
 
         <service
             android:name=".services.BitalinoDataService"
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".SelectRecordingActivity" />
-        <activity android:name=".ShowSingleDataActivity" />
+        <activity
+            android:name=".SelectRecordingActivity"
+            android:label="Recordings"
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".ShowSingleDataActivity"
+            android:label="Single channel recording"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:configChanges="keyboardHidden|orientation|screenSize"/>
 
         <service
             android:name=".services.BitalinoCommunicationService"
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".HeartMonitorActivity" />
+        <activity
+            android:name=".HeartMonitorActivity"
+            android:label="Heart Rate Monitor"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:configChanges="keyboardHidden|orientation|screenSize"/>
 
         <service
             android:name=".services.GPSService"
@@ -60,12 +88,16 @@
 
         <activity
             android:name=".PopMapActivity"
+            android:label="My path"
             android:theme="@style/AppTheme.PopupCustomTheme" />
-        <activity android:name=".PopBPMRRGraphActivity"
-            android:theme="@style/AppTheme.PopupCustomTheme">
-
-        </activity>
-
+        <activity
+            android:name=".PopBPMRRGraphActivity"
+            android:label="Monitor values"
+            android:theme="@style/AppTheme.PopupCustomTheme" />
+        <activity
+            android:name=".CtreateHMConfigActivity"
+            android:label="HM Config"
+            android:theme="@style/AppTheme.PopupCustomTheme"/>
     </application>
 
 </manifest>
