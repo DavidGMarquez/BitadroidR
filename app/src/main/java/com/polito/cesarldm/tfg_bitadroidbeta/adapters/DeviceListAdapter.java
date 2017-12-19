@@ -51,7 +51,9 @@ public class DeviceListAdapter extends BaseAdapter{
     public int getCount() {return devices.size();}
 
     @Override
-    public BluetoothDevice getItem(int position) {return devices.get(position);}
+    public BluetoothDevice getItem(int position) {
+
+        return devices.get(position);}
 
     @Override
     public long getItemId(int position) {

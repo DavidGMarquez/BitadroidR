@@ -74,7 +74,7 @@ public class SelectDevicesActivity extends AppCompatActivity  implements View.On
 
     private static final long SCAN_PERIOD = 5000;
     private static final long WAIT_PERIOD = 20000;
-    private static final long CONFIRM_PERIOD = 3000;
+    private static final long CONFIRM_PERIOD = 4000;
 
     class IncomingHandler extends Handler {
         @Override
@@ -149,16 +149,21 @@ public class SelectDevicesActivity extends AppCompatActivity  implements View.On
     }
 
     private void returnDeviceBitalinoDescription() {
-        final BluetoothDevice deviceNew=adapterNew.getItem(positionSelected);
-        Intent returnIntentTwo = new Intent();
-        returnIntentTwo.putExtra("result", deviceNew);
-        returnIntentTwo.putExtra("Desc",desc);
-        if(state!=null) {
-            returnIntentTwo.putExtra("State", state);
+        try {
+            final BluetoothDevice deviceNew = adapterNew.getItem(positionSelected);
+            Intent returnIntentTwo = new Intent();
+            returnIntentTwo.putExtra("result", deviceNew);
+            returnIntentTwo.putExtra("Desc",desc);
+            if(state!=null) {
+                returnIntentTwo.putExtra("State", state);
+            }
+            overridePendingTransition(R.animator.lefttorigth,R.animator.rigthtoleft);
+            setResult(SelectDevicesActivity.RESULT_OK, returnIntentTwo);
+            this.finish();
+        }catch(IndexOutOfBoundsException e){
+        toastMessageLong("Something went wrong!, please try again");
         }
-        overridePendingTransition(R.animator.lefttorigth,R.animator.rigthtoleft);
-        setResult(SelectDevicesActivity.RESULT_OK, returnIntentTwo);
-        this.finish();
+
     }
 
     /**
@@ -395,7 +400,6 @@ public class SelectDevicesActivity extends AppCompatActivity  implements View.On
                             .setOnDismissListener(new DialogInterface.OnDismissListener() {
                                 @Override
                                 public void onDismiss(DialogInterface dialogInterface) {
-
                                 }
                             });
                     builder.show();
@@ -414,7 +418,6 @@ public class SelectDevicesActivity extends AppCompatActivity  implements View.On
             // representation of that from the raw IBinder object.
             mService = new Messenger(service);
             mBound = true;
-
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -422,7 +425,6 @@ public class SelectDevicesActivity extends AppCompatActivity  implements View.On
             // unexpectedly disconnected -- that is, its process crashed.
             mService = null;
             mBound = false;
-
         }
     };
 

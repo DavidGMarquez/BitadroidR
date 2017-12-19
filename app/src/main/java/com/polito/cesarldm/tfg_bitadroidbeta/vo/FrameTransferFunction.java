@@ -74,7 +74,8 @@ public class FrameTransferFunction {
                     temp6=round(temp6,2);
                     convertedValues[i]=temp6;
                     break;
-
+                default:
+                    convertedValues[i]=f;
             }
 
         }

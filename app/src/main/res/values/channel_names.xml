@@ -7,5 +7,6 @@
         <item>EEG</item>
         <item>ACC</item>
         <item>LUX</item>
+        <item>RAW</item>
     </string-array>
 </resources>
