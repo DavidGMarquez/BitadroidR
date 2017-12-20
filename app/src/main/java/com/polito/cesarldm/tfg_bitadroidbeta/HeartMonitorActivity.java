@@ -267,7 +267,8 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
         if(mBound) {
             unbindService(mConnection);
         }
-        MoveViewJob.getInstance(null,0f,0f,null,null);
+        linechart.cleanPool();
+        linechart.deleteChart();
         Intent intent = new Intent(this, BitalinoCommunicationService.class);
         stopService(intent);
         cleanUpIfEnd();

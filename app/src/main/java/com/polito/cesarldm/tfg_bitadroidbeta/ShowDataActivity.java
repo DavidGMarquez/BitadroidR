@@ -257,8 +257,11 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
         if(mBound) {
             this.unbindService(mConnection);
         }
-        MoveViewJob.getInstance(null,0f,0f,null,null);
+        for (int j = 0; j < graphs.size(); j++) {
+            graphs.get(j).cleanPool();
+            graphs.get(j).deleteChart();
 
+        }
         Intent intent = new Intent(this, BitalinoCommunicationService.class);
         stopService(intent);
     }
@@ -386,20 +389,20 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
             }
         }
     }
-    private void appendData(BITalinoFrame frame) {
-            // calculates x value of graphs
+    private void appendData(BITalinoFrame frame) {// calculates x value of graphs
             timeCounter++;
         if (isVisible) {
             float f;
             float[] ftemp=new float[6];            xValue = (float) (timeCounter * 1000) / mConfiguration.getVisualizationRate();
             // gets default share preferences with multi-process flag
-
                 for (int i = 0; i < graphs.size(); i++) {
-                    if(!isRAWEnabled){
-                        ftemp=frameTransFunc.getConvertedValues(frame);
-                        f=ftemp[i];
-                    }else f = frame.getAnalog(mConfiguration.recordingChannels[i]);
-                        graphs.get(i).addEntry(xValue,f);
+                    if(isViewVisible(graphs.get(i).getGraphView())) {
+                        if (!isRAWEnabled) {
+                            ftemp = frameTransFunc.getConvertedValues(frame);
+                            f = ftemp[i];
+                        } else f = frame.getAnalog(mConfiguration.recordingChannels[i]);
+                        graphs.get(i).addEntry(xValue, f);
+                    }
                 }
             }
     }

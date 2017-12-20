@@ -252,7 +252,8 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
         if(mBound) {
             unbindService(mConnection);
         }
-        MoveViewJob.getInstance(null,0f,0f,null,null);
+        linechart.cleanPool();
+        linechart.deleteChart();
         Intent intent = new Intent(this, BitalinoCommunicationService.class);
         stopService(intent);
 

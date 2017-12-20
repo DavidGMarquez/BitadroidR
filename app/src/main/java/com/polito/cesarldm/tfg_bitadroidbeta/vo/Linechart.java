@@ -49,9 +49,11 @@ public class Linechart implements OnChartGestureListener, View.OnClickListener,O
     private int zoomValue=5;
     boolean zoomFinished=false;
     float xscale;
-    private Entry selectedentry;
+    public Entry selectedentry;
     private float chartScale;
     private int zoomCount=0;
+    LineData data;
+    ILineDataSet set;
 
 
 
@@ -95,6 +97,7 @@ public class Linechart implements OnChartGestureListener, View.OnClickListener,O
         desc.setText(this.legendName);
         chart.setDescription(desc);
         chart.setAutoScaleMinMaxEnabled(true);
+        this.data = this.chart.getData();
         chart.invalidate();
     }
     private void setAxisCharacteristics() {
@@ -116,10 +119,8 @@ public class Linechart implements OnChartGestureListener, View.OnClickListener,O
 
     public void addEntry(float xvalue,float value){
 
-        LineData data = this.chart.getData();
-
         if (data != null) {
-            ILineDataSet set = data.getDataSetByIndex(0);
+            set = data.getDataSetByIndex(0);
             // set.addEntry(...); // can be called as well
 
             if (set == null) {
@@ -284,18 +285,8 @@ public class Linechart implements OnChartGestureListener, View.OnClickListener,O
 
 
     }
-    public void saveChart(){
-
-    }
 
 
-/**
-    @Override
-    public boolean onLongClick(View v) {
-
-        return false;
-    }
-**/
     @Override
     public void onClick(View v) {
 
@@ -351,6 +342,16 @@ public class Linechart implements OnChartGestureListener, View.OnClickListener,O
     public void cleanPool(){
         //avoid memory leak:
          MoveViewJob.getInstance(null, 0f, 0f, null, null);
+         chart.clearAllViewportJobs();
+
+    }
+    public void deleteChart(){
+      this.set.clear();
+      this.data.clearValues();
+      this.chart.clearValues();
+      this.set=null;
+      this.data=null;
+      this.chart=null;
     }
 
     public float getdataSize() {
