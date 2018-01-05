@@ -24,42 +24,25 @@ public class DeviceListAdapter extends BaseAdapter{
     Context context;
     private ArrayList<BluetoothDevice> devices;
 
-
     public DeviceListAdapter(Context context){
         super();
         this.devices=new ArrayList<>();
         this.context=context;
 
     }
-
     public void addDevice(BluetoothDevice device) {
         if(!devices.contains(device)) {
             devices.add(device);
         }
     }
-
-    public void clear(){
-        devices.clear();
-    }
-
-    public void setDeviceArray(ArrayList<BluetoothDevice> bitalinoDevices){
-        this.devices=bitalinoDevices;
-    }
-
-
+    public void clear(){devices.clear();}
+    public void setDeviceArray(ArrayList<BluetoothDevice> bitalinoDevices){this.devices=bitalinoDevices;}
     @Override
     public int getCount() {return devices.size();}
-
     @Override
-    public BluetoothDevice getItem(int position) {
-
-        return devices.get(position);}
-
+    public BluetoothDevice getItem(int position) {return devices.get(position);}
     @Override
-    public long getItemId(int position) {
-        return position;
-    }
-
+    public long getItemId(int position) {return position;}
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
@@ -81,12 +64,10 @@ public class DeviceListAdapter extends BaseAdapter{
         //add a CONNECTED/DISCONECTED INDICATOR
         return convertView;
     }
-
-
-
     static class ViewHolder{
         TextView deviceName;
         TextView deviceAddress;
         ImageView imageView;
     }
+    //... Métodos
 }

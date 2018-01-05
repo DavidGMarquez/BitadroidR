@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.text.Html;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -34,16 +35,11 @@ import java.util.List;
 
 public class SelectRecordingActivity extends AppCompatActivity implements View.OnClickListener {
     private String path= Environment.getExternalStorageDirectory()+Constants.APP_DIRECTORY;
-   // private RecordingListAdapter listAdapter;
     RVRecordingListAdapter rvAdapter;
     LinearLayoutManager mLinearLM;
     ArrayList<File> fileList=new ArrayList<File>();
     boolean isItemClicked=false;
-
-    //UI
-    //ListView recordListView;
     RecyclerView rvRecordListView;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,8 +71,9 @@ public class SelectRecordingActivity extends AppCompatActivity implements View.O
                     Intent emailIntent = new Intent(Intent.ACTION_SEND);
                     emailIntent.setType("text/plain");
                     emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[] {"email@example.com"});
-                    emailIntent.putExtra(Intent.EXTRA_SUBJECT, "subject here");
-                    emailIntent.putExtra(Intent.EXTRA_TEXT, "body text");
+                    emailIntent.putExtra(Intent.EXTRA_SUBJECT, "My BITalino Recording");
+                    emailIntent.putExtra(Intent.EXTRA_TEXT, "You can send your files, and display them using OpenSignals!" +"\n"+
+                            " Enjoy");
                     Uri uri = Uri.fromFile(sendFile);
                     emailIntent.putExtra(Intent.EXTRA_STREAM, uri);
                     startActivity(Intent.createChooser(emailIntent, "Pick an Email provider"));
@@ -92,22 +89,21 @@ public class SelectRecordingActivity extends AppCompatActivity implements View.O
             }
         }));
 
-
-
     }
-
     public void listFiles(){
         if(createPath()) {
             fileList.clear();
             File directory = new File(path);
             File[] files = directory.listFiles();
-            for(File file:files){
-                if((!file.isDirectory())&&(file.getAbsolutePath().endsWith(".zip"))){
-                    fileList.add(file);
+            if (files != null) {
+                for (File file : files) {
+                    if ((!file.isDirectory()) && (file.getAbsolutePath().endsWith(".zip"))) {
+                        fileList.add(file);
+                    }
                 }
+                rvAdapter.setArray(fileList);
+                rvAdapter.notifyDataSetChanged();
             }
-            rvAdapter.setArray(fileList);
-            rvAdapter.notifyDataSetChanged();
         }
     }
     private boolean createPath(){
@@ -128,32 +124,15 @@ public class SelectRecordingActivity extends AppCompatActivity implements View.O
 
     }
 
-    /** @Override
-    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-        File sendFile=listAdapter.getItem(position);
-        Intent emailIntent = new Intent(Intent.ACTION_SEND);
-        emailIntent.setType("text/plain");
-        emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[] {"email@example.com"});
-        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "subject here");
-        emailIntent.putExtra(Intent.EXTRA_TEXT, "body text");
-        Uri uri = Uri.fromFile(sendFile);
-        emailIntent.putExtra(Intent.EXTRA_STREAM, uri);
-        startActivity(Intent.createChooser(emailIntent, "Pick an Email provider"));
-        return true;
-    }
-   **/
-
     private interface ClickListener{
         void onClick(View view,int position);
         void onLongClick(View view,int position);
     }
     private class RecyclerTouchListener implements RecyclerView.OnItemTouchListener{
-
         private ClickListener clicklistener;
         private GestureDetector gestureDetector;
 
         private RecyclerTouchListener(Context context, final RecyclerView recycleView, final ClickListener clicklistener){
-
             this.clicklistener=clicklistener;
             this.gestureDetector=new GestureDetector(context,new GestureDetector.SimpleOnGestureListener(){
                 @Override
@@ -204,10 +183,10 @@ public class SelectRecordingActivity extends AppCompatActivity implements View.O
             if (direction == ItemTouchHelper.LEFT) {    //if swipe left
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(SelectRecordingActivity.this); //alert for confirm to delete
-                builder.setMessage("Are you sure to delete?");    //set message
-                builder.setIcon(R.drawable.ic_warning_notice);
+                builder.setMessage(Html.fromHtml("<font color='#F44E42'>Are you sure to delete?</font>"));    //set message
+                builder.setIcon(R.drawable.ic_fail);
 
-                builder.setPositiveButton("REMOVE", new DialogInterface.OnClickListener() { //when click on DELETE
+                builder.setPositiveButton(Html.fromHtml("<font color='#F44E42'>REMOVE</font>"), new DialogInterface.OnClickListener() { //when click on DELETE
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                        if(rvAdapter.getSelectedCC(position).delete()){
@@ -217,7 +196,7 @@ public class SelectRecordingActivity extends AppCompatActivity implements View.O
                        }
                         return;
                     }
-                }).setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {  //not removing items if cancel is done
+                }).setNegativeButton(Html.fromHtml("<font color='#F44E42'>CANCEL</font>"), new DialogInterface.OnClickListener() {  //not removing items if cancel is done
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         rvAdapter.notifyItemRemoved(position + 1);    //notifies the RecyclerView Adapter that data in adapter has been removed at a particular position.

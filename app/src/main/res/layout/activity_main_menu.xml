@@ -5,8 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.polito.cesarldm.tfg_bitadroidbeta.MainMenuActivity">
-
-
     <Button
         android:id="@+id/btn_MM_start_recordings"
         android:layout_width="250dp"
@@ -25,7 +23,6 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/rl_MMA" />
-
     <Button
         android:id="@+id/btn_MM_show_recordings"
         android:layout_width="250dp"
@@ -44,7 +41,6 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btn_MM_ECG" />
-
     <Button
         android:id="@+id/btn_MM_ECG"
         android:layout_width="250dp"
@@ -63,8 +59,6 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btn_MM_start_recordings" />
-
-
     <RelativeLayout
         android:id="@+id/rl_MMA"
         android:layout_width="0dp"
@@ -74,8 +68,6 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent">
-
-
         <ImageView
             android:id="@+id/imageViewBitaText"
             android:layout_width="wrap_content"
@@ -84,7 +76,6 @@
             android:layout_centerHorizontal="true"
             android:layout_marginLeft="10dp"
             android:padding="5dp" />
-
         <TextView
             android:id="@+id/tv_MM_name"
             android:layout_width="wrap_content"
@@ -93,7 +84,6 @@
             android:layout_centerVertical="true"
             android:textColor="@color/colorPrimary"
             android:textSize="20dp" />
-
         <TextView
             android:id="@+id/tv_MM_mac"
             android:layout_width="wrap_content"
@@ -102,7 +92,6 @@
             android:layout_centerHorizontal="true"
             android:textColor="@color/colorPrimary"
             android:textSize="20dp" />
-
         <TextView
             android:id="@+id/tv_battery_info"
             android:layout_width="wrap_content"
@@ -111,7 +100,6 @@
             android:layout_centerHorizontal="true"
             android:textColor="@color/colorPrimary"
             android:textSize="30dp" />
-
         <ImageView
             android:id="@+id/imageViewBattery"
             android:layout_width="wrap_content"
@@ -119,9 +107,7 @@
             android:layout_alignParentBottom="true"
             android:layout_toStartOf="@+id/tv_battery_info"
             android:tint="@color/colorAccent" />
-
     </RelativeLayout>
-
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/btn_MM_scan"
         android:layout_width="55dp"
@@ -142,6 +128,4 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0"
         app:srcCompat="@drawable/ic_bth_search" />
-
-
 </android.support.constraint.ConstraintLayout>

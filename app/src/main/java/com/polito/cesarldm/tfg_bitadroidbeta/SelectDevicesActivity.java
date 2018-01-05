@@ -115,8 +115,6 @@ public class SelectDevicesActivity extends AppCompatActivity  implements View.On
                         alertDialogCheckBitalino.show();
 
                     }
-
-
                     break;
                 case BitalinoCommunicationService.MSG_SEND_CONNECTION_ON:
                     prgDialogCheckBitalino.dismiss();
@@ -141,7 +139,19 @@ public class SelectDevicesActivity extends AppCompatActivity  implements View.On
                     if (!desc.isBITalino2()) {
                             alertDialogCheckBitalino.show();
                         }
+                    if(!desc.isBITalino2()){
+                        alertDialogCheckBitalino.show();
+                        mHandler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                alertDialogCheckBitalino.dismiss();
+                                returnDeviceBitalinoDescription();
 
+                            }
+                        }, CONFIRM_PERIOD);
+                        alertDialogCheckBitalino.show();
+
+                    }
                     break;
 
             }

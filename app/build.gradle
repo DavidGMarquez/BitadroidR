@@ -38,3 +38,14 @@ dependencies {
     compile 'com.google.android.gms:play-services:10.2.0'
     testCompile 'junit:junit:4.12'
 }
+task deleteJar(type: Delete) {
+    delete 'libs/TFG_BitadroidBeta.jar'
+}
+task createJar(type: Copy) {
+    from('build/intermediates/bundles/release/')
+    into('libs/jars/')
+    include('classes.jar')
+    rename('classes.jar', 'TFG_BitadroidBeta.jar')
+}
+createJar.dependsOn(deleteJar, build)
+

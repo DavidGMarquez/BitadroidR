@@ -46,7 +46,6 @@ import com.polito.cesarldm.tfg_bitadroidbeta.vo.ChannelConfiguration;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.FrameTransferFunction;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.Linechart;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.LowPassFilter;
-import com.polito.cesarldm.tfg_bitadroidbeta.vo.MPAndroidGraph;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.RecordingNotificationBuilder;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.SignalFilter;
 
@@ -64,26 +63,17 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
     Button btnMap,btnZoomReset;
     RadioButton rdbtnRaw;
     SeekBar sbUpTh;
-    ArrayList<BITalinoFrame> frames=new ArrayList<BITalinoFrame>();
     ArrayList<Location> locations=new ArrayList<Location>();
     TextView tvMax,tvMin,tvAvg,tvSel,tvSbVal,tvLoc;
-    //ArrayList<MPAndroidGraph> graphs=new ArrayList<MPAndroidGraph>();
-    MPAndroidGraph mpAndroidGraph;
     Linechart linechart;
     float outPut;
     //ListView graphList;
     FrameTransferFunction frameTransFunc;
     RecordingNotificationBuilder mNotifierBuilder;
-
     boolean recordingStarted=false;
-    private double samplingFrames;
-    private double samplingCounter = 0;
     private double timeCounter = 0;
-    private float  xValueRatio;
     float xValue=0;
-    private int numberOfFrames;
     private long timeWhenStopped=0;
-
     BluetoothDevice device;
     ChannelConfiguration mConfiguration;
     private int dataCheckCount=0;
@@ -93,9 +83,7 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
     boolean isRAWEnabled;
     private final Messenger activityMessenger = new Messenger(new ShowSingleDataActivity.IncomingHandler());
     Messenger mService = null;
-    private LayoutInflater inflater;
     public ProgressDialog progressDialogConnecting;
-    private SignalFilter mSignalFilter;
     private LowPassFilter mLowPasFilter;
     float sumForAvg=0;
     private float yMax,yMin,avg;
@@ -112,43 +100,15 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
             Toast.makeText(this, "No device or config,", Toast.LENGTH_SHORT).show();
             finish();
         }
-        inflater = this.getLayoutInflater();
-
         //Solicitar permisos
         permissionCheck();
         if(getIntent().getParcelableExtra("Device")!=null) {
             device = getIntent().getParcelableExtra("Device");
             mConfiguration = getIntent().getParcelableExtra("Config");
-            tvMax=(TextView)findViewById(R.id.tv_SSDA_maxY);
-            tvMin=(TextView)findViewById(R.id.tv_SSDA_minY);
-            tvAvg=(TextView)findViewById(R.id.tv_SSDA_avg);
-            tvSel=(TextView)findViewById(R.id.tv_SSDA_selected);
-            tvSbVal=(TextView)findViewById(R.id.tv_SSDA_sb_value);
-           // tvLoc=(TextView)findViewById(R.id.tv_SSDA_latlon);
-            btnStart =(ImageButton) findViewById(R.id.btn_SSDA_start);
-            btnStart.setOnClickListener(this);
-            btnEnd =(ImageButton) findViewById(R.id.btn_SSDA_end);
-            btnEnd.setOnClickListener(this);
-            btnStop =(ImageButton) findViewById(R.id.btn_SSDA_stop);
-            btnStop.setOnClickListener(this);
-            btnMap=(Button) findViewById(R.id.bt_SSDA_map);
-            btnMap.setOnClickListener(this);
-            btnZoomIn=(ImageButton)findViewById(R.id.btn_plus);
-            btnZoomIn.setOnClickListener(this);
-            btnZoomReset=(Button) findViewById(R.id.btn_reset);
-            btnZoomReset.setOnClickListener(this);
-            btnZoomOut=(ImageButton) findViewById(R.id.btn_minus);
-            btnZoomOut.setOnClickListener(this);
-            rdbtnRaw=(RadioButton)findViewById(R.id.RAW_btn);
-            rdbtnRaw.setOnClickListener(this);
-            rdbtnRaw.setChecked(true);
-            isRAWEnabled=true;
+            setUpButtons();
             Intent intent = new Intent(this, BitalinoCommunicationService.class);
             intent.putExtra("Device", device);
             intent.putExtra("Config", mConfiguration);
-            samplingFrames = (double) mConfiguration.getSampleRate() / mConfiguration.getVisualizationRate();
-            numberOfFrames = mConfiguration.getSampleRate();
-            xValueRatio=mConfiguration.getVisualizationRate()/10;
             chrono=(Chronometer)findViewById(R.id.chrono_SSDA);
             setActivityLayout();
             startService(intent);
@@ -164,10 +124,35 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
         }
 
     }
+    private void setUpButtons(){
+        tvMax=(TextView)findViewById(R.id.tv_SSDA_maxY);
+        tvMin=(TextView)findViewById(R.id.tv_SSDA_minY);
+        tvAvg=(TextView)findViewById(R.id.tv_SSDA_avg);
+        tvSel=(TextView)findViewById(R.id.tv_SSDA_selected);
+        tvSbVal=(TextView)findViewById(R.id.tv_SSDA_sb_value);
+        btnStart =(ImageButton) findViewById(R.id.btn_SSDA_start);
+        btnStart.setOnClickListener(this);
+        btnEnd =(ImageButton) findViewById(R.id.btn_SSDA_end);
+        btnEnd.setOnClickListener(this);
+        btnStop =(ImageButton) findViewById(R.id.btn_SSDA_stop);
+        btnStop.setOnClickListener(this);
+        btnMap=(Button) findViewById(R.id.bt_SSDA_map);
+        btnMap.setOnClickListener(this);
+        btnZoomIn=(ImageButton)findViewById(R.id.btn_plus);
+        btnZoomIn.setOnClickListener(this);
+        btnZoomReset=(Button) findViewById(R.id.btn_reset);
+        btnZoomReset.setOnClickListener(this);
+        btnZoomOut=(ImageButton) findViewById(R.id.btn_minus);
+        btnZoomOut.setOnClickListener(this);
+        rdbtnRaw=(RadioButton)findViewById(R.id.RAW_btn);
+        rdbtnRaw.setOnClickListener(this);
+        rdbtnRaw.setChecked(true);
+        isRAWEnabled=true;
+
+    }
     private void setActivityLayout() {
         ViewGroup.LayoutParams layoutParams=new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         linechart=new Linechart(this,mConfiguration,0);
-        //mpAndroidGraph=new MPAndroidGraph(this,mConfiguration,0);
         RelativeLayout rl=(RelativeLayout)findViewById(R.id.relativeLayout_SSDA);
         rl.setClickable(true);
         rl.setLongClickable(true);
@@ -175,8 +160,6 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
         rl.setOnClickListener(this);
         linechart.getGraphView().setLayoutParams(layoutParams);
         rl.addView(linechart.getGraphView());
-        //mpAndroidGraph.getGraphView().setLayoutParams(layoutParams);
-        mSignalFilter=new SignalFilter((linechart));
         mLowPasFilter=new LowPassFilter();
         sbUpTh=(SeekBar)findViewById(R.id.sb_SSDA_aboveTH);
         sbUpTh.setOnSeekBarChangeListener(this);
@@ -347,11 +330,24 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         int value;
-        if(progress<=33){
+        if(progress<=15){
            value=0;
-       }else if(progress<=66) {
-           value=50;
-       }else if(progress<=100){
+       }else if(progress<=33) {
+           value=20;
+
+       }else if(progress<=45) {
+            value=40;
+
+        }else if(progress<=65) {
+            value=60;
+
+        }else if(progress<=85) {
+            value=80;
+
+        }else if(progress<=95) {
+            value=90;
+
+        }else if(progress<=100){
             value=99;
         }else{
             value=0;
@@ -435,10 +431,6 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
                 updateStatistics();
                 dataCheckCount = 0;
             }
-
-
-
-
     }
     private void updateStatistics() {
         float size=linechart.getdataSize();
@@ -448,7 +440,8 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
         tvMax.setText("Max: "+yMax);
         tvMin.setText("Min: "+yMin);
         tvAvg.setText("Avg: "+avg);
-        tvSel.setText("Y: "+Float.toString(linechart.getSelectedValue().getY()));
+        float y=linechart.getSelectedValue().getY();
+        tvSel.setText("Y: "+String.valueOf(y));
     }
     private static float round(float d, int decimalPlace) {
         BigDecimal bd = new BigDecimal(Float.toString(d));

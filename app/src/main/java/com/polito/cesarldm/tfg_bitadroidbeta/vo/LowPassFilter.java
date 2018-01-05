@@ -10,6 +10,7 @@ public class LowPassFilter {
     public LowPassFilter(){
         this.alpha=0.0f;
     }
+
     public float lowPass(float newValue,float oldValue){
         if(oldValue==0.0f)return  newValue;
         if(alpha==0.0f)return newValue;

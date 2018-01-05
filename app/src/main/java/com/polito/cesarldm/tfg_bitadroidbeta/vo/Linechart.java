@@ -65,6 +65,7 @@ public class Linechart implements OnChartGestureListener, View.OnClickListener,O
         this.legendName=mConfiguration.shownNames[position];
         this.channelNum=mConfiguration.recordingChannels[position];
         setChartCharacteristics();
+        this.chart.setOnChartValueSelectedListener(this);
 
     }
 
@@ -282,7 +283,7 @@ public class Linechart implements OnChartGestureListener, View.OnClickListener,O
     public Entry getSelectedValue(){return this.selectedentry;}
 
     public void setHighLightt(float xvalue){
-
+    this.chart.highlightValue(xvalue,0);
 
     }
 

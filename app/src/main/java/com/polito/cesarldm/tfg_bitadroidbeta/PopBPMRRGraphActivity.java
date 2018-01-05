@@ -9,12 +9,10 @@ import android.widget.RelativeLayout;
 
 import com.github.mikephil.charting.data.Entry;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.Linechart;
-import com.polito.cesarldm.tfg_bitadroidbeta.vo.MPAndroidGraph;
 
 import java.util.ArrayList;
 
 public class PopBPMRRGraphActivity extends Activity  {
-    MPAndroidGraph mpAndroidGraphBPM,mpAndroidGraphRR;
     Linechart linechartBpm,linechartRR;
 
     ArrayList<Entry> rrValues=new ArrayList<Entry>();

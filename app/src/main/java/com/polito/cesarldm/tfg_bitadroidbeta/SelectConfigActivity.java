@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.text.Html;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -304,9 +305,9 @@ public class SelectConfigActivity extends AppCompatActivity implements View.OnCl
             if (direction == ItemTouchHelper.LEFT) {    //if swipe left
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(SelectConfigActivity.this); //alert for confirm to delete
-                builder.setMessage("Are you sure to delete?");    //set message
-                builder.setIcon(R.drawable.ic_warning_notice);
-                builder.setPositiveButton("REMOVE", new DialogInterface.OnClickListener() { //when click on DELETE
+                builder.setMessage(Html.fromHtml("<font color='#F44E42'>Are you sure to delete?</font>"));    //set message
+                builder.setIcon(R.drawable.ic_fail);
+                builder.setNegativeButton(Html.fromHtml("<font color='#F44E42'>REMOVE</font>"), new DialogInterface.OnClickListener() { //when click on DELETE
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         jsonManager.deleteConfiguration(position);
@@ -314,7 +315,7 @@ public class SelectConfigActivity extends AppCompatActivity implements View.OnCl
                         listConfigurations();
                         return;
                     }
-                }).setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {  //not removing items if cancel is done
+                }).setNegativeButton(Html.fromHtml("<font color='#F44E42'>CANCEL</font>"), new DialogInterface.OnClickListener() {  //not removing items if cancel is done
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         rvAdapter.notifyItemRemoved(position + 1);    //notifies the RecyclerView Adapter that data in adapter has been removed at a particular position.

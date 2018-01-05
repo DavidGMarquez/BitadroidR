@@ -13,7 +13,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.location.Location;
 import android.os.Build;
@@ -23,7 +22,6 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.os.SystemClock;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
@@ -36,21 +34,17 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
-import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.jobs.MoveViewJob;
 import com.polito.cesarldm.tfg_bitadroidbeta.services.*;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.ChannelConfiguration;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.FrameTransferFunction;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.Linechart;
-import com.polito.cesarldm.tfg_bitadroidbeta.vo.MPAndroidGraph;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.RecordingNotificationBuilder;
 
 
@@ -69,33 +63,24 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
     RadioButton rdbtnRaw;
     ImageButton btnStart, btnStop,btnEnd,btnZoomIn,btnZoomOut;
     ArrayList<BITalinoFrame> frames=new ArrayList<BITalinoFrame>();
-    //ArrayList<MPAndroidGraph> graphs=new ArrayList<MPAndroidGraph>();
     ArrayList<Linechart> graphs=new ArrayList<Linechart>();
     ArrayList<Location> locations=new ArrayList<Location>();
     ScrollView scrollView;
-    //ListView graphList;
     FrameTransferFunction frameTransFunc;
-    private double samplingFrames;
-    private double samplingCounter = 0;
     private double timeCounter = 0;
     float xValue=0;
-    private int numberOfFrames;
     private long timeWhenStopped=0;
     BluetoothDevice device;
     ChannelConfiguration mConfiguration;
-    boolean mBound;
-    boolean isVisible;
+    boolean mBound,isVisible,isRAWEnabled;
     boolean isConnected=false;
     boolean recordingStarted=false;
-    boolean isRAWEnabled;
     private final Messenger activityMessenger = new Messenger(new IncomingHandler());
     Messenger mService = null;
     private LayoutInflater inflater;
     public ProgressDialog progressDialogConnecting;
     private AlertDialog alertDialogCheckEnd,alertDialogConnected;
     Chronometer chrono;
-    int seconds=10;
-    private Entry entry=new Entry();
     RecordingNotificationBuilder mNotifierBuilder;
 
     @Override
@@ -117,13 +102,6 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
             chrono=(Chronometer)findViewById(R.id.chrono_SDA);
             scrollView=(ScrollView)findViewById(R.id.sc_SD);
             Intent intent = new Intent(this, BitalinoCommunicationService.class);
-            //Intent intent = new Intent(this, BitalinoDataService.class);
-            //intent.putExtra("Device", device);
-            //intent.putExtra("Config", mConfiguration);
-            //-----Part of code created by @author Carlos Marten, Bitadroid APP NewRecordingActivity
-            samplingFrames = (double) mConfiguration.getSampleRate() / mConfiguration.getVisualizationRate();
-            numberOfFrames = mConfiguration.getSampleRate();
-            //*************************************************************************************
             setActivityLayout();
             startService(intent);
             alertDialogInitiate();
@@ -131,7 +109,7 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
             progressDialogConnecting.setMessage("Connecting to Bitalino");
             frameTransFunc=new FrameTransferFunction(mConfiguration);
             mNotifierBuilder=new RecordingNotificationBuilder(this,1,getClass());
-            rdbtnRaw=(RadioButton)findViewById(R.id.RAW_btn);
+
         }else {
             Toast.makeText(this, "No device selected ", Toast.LENGTH_SHORT).show();
             finish();

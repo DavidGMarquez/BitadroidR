@@ -49,7 +49,6 @@ import com.polito.cesarldm.tfg_bitadroidbeta.vo.ChannelConfiguration;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.FrameTransferFunction;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.HMFrame;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.Linechart;
-import com.polito.cesarldm.tfg_bitadroidbeta.vo.MPAndroidGraph;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.RecordingNotificationBuilder;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.SignalFilter;
 
@@ -65,7 +64,6 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
     ImageButton btnStart, btnStop,btnEnd,btnStats,btnZoomIn,btnZoomOut;
     Button btnMap,btnZoomReset;
     RadioButton rdbtnRaw;
-    SeekBar sbUpTh;
     ArrayList<Entry> rrValues=new ArrayList<Entry>();
     ArrayList<Entry> bpmValues=new ArrayList<Entry>();
     ArrayList<Location> locations=new ArrayList<Location>();
@@ -74,26 +72,15 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
     static SoundPool soundPool;
     static AudioManager amg;
     static int audio;
-    //ArrayList<MPAndroidGraph> graphs=new ArrayList<MPAndroidGraph>();
-    //MPAndroidGraph mpAndroidGraph;
     Linechart linechart;
-    //ListView graphList;
     FrameTransferFunction frameTransFunc;
     HMFrame mHMFrame;
-
-
-    private double samplingFrames;
-    private double samplingCounter = 0;
-    private int updateBPMCounter=0;
     private long beatSampleCount=0;
     private long RRSamplecount=0;
     private long timeWhenStopped=0;
    static private double timeCounter = 0;
-    static private float  xValueRatio;
     float xValue=0;
-    private int numberOfFrames;
     private int delay;
-
     BluetoothDevice device;
     RecordingNotificationBuilder mNotifierBuilder;
     static ChannelConfiguration mConfiguration;
@@ -105,11 +92,7 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
     boolean isRAWEnabled;
     private final Messenger activityMessenger = new Messenger(new HeartMonitorActivity.IncomingHandler());
     Messenger mService = null;
-    private LayoutInflater inflater;
     public ProgressDialog progressDialogConnecting;
-    private SignalFilter mSignalFilter;
-    float sumForAvg=0;
-    private float yMax,yMin,avg;
     private Bdac bdac;
     private AlertDialog alertDialogCheckEnd, alertDialogConnected;
 
@@ -123,7 +106,7 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
             finish();
         }
         mHMFrame=new HMFrame();
-        inflater = this.getLayoutInflater();
+
 
         //Solicitar permisos
         permissionCheck();
@@ -157,9 +140,6 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
             tvBpm=(TextView)findViewById(R.id.tv_HM_bpm);
             tvRR=(TextView)findViewById(R.id.tv_HM_rr);
             chrono=(Chronometer)findViewById(R.id.chrono_HM);
-            samplingFrames = (double) mConfiguration.getSampleRate() / mConfiguration.getVisualizationRate();
-            numberOfFrames = mConfiguration.getSampleRate();
-            xValueRatio=mConfiguration.getVisualizationRate()/10;
             setActivityLayout();
             startService(intent);
             alertDialogInitiate();
@@ -416,11 +396,11 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
             f=ftemp[0];
         }else f = frame.getAnalog(position);
                    linechart.addEntry(xValue,f);
-                    samplingCounter -= samplingFrames;
+
             }
             if (dataCheckCount >= mConfiguration.getSampleRate()*10) {
                 dataCheckCount = 0;
-                updateBPMCounter=0;
+
             }
     }
     private float xValueGenerator(double timeCounter) {
@@ -591,7 +571,6 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
         playSound(audio);
        float x= xValueGenerator((double) time);
         linechart.setHighLightt(x);
-        updateBPMCounter++;
         calculateRRTime();
 
     }
