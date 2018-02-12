@@ -13,6 +13,8 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -28,6 +30,7 @@ import info.plux.pluxapi.bitalino.BITalinoState;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 
 public class MainMenuActivity extends AppCompatActivity  implements View.OnClickListener{
 
@@ -62,6 +65,22 @@ public class MainMenuActivity extends AppCompatActivity  implements View.OnClick
         btnShowRec.setOnClickListener(this);
         btnEcg.setOnClickListener(this);
         runtimeLocationPermissions();
+
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.my_menu,menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.mybutton) {
+
+            // do something here
+        }
+        return super.onOptionsItemSelected(item);
     }
     @Override
     protected void onStart(){
@@ -224,7 +243,23 @@ public class MainMenuActivity extends AppCompatActivity  implements View.OnClick
                             });
                     builder.show();
                 }
+            }if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            //Android Marshmallow and above permission check
+            if (this.checkSelfPermission(READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle(getString(R.string.permission_check_dialog_title_READ))
+                        .setMessage(getString(R.string.permission_check_dialog_message_READ))
+                        .setPositiveButton(getString(R.string.permission_check_dialog_positive_button), null)
+                        .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @TargetApi(Build.VERSION_CODES.M)
+                            @Override
+                            public void onDismiss(DialogInterface dialogInterface) {
+                                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 103);
+                            }
+                        });
+                builder.show();
             }
+        }
 
     }
     @Override
@@ -254,6 +289,23 @@ public class MainMenuActivity extends AppCompatActivity  implements View.OnClick
                     final AlertDialog.Builder builder = new AlertDialog.Builder(this)
                             .setTitle(getString(R.string.permission_denied_dialog_title))
                             .setMessage(getString(R.string.permission_denied_dialog_message))
+                            .setPositiveButton(getString(R.string.permission_denied_dialog_positive_button), null)
+                            .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                @Override
+                                public void onDismiss(DialogInterface dialogInterface) {
+
+                                }
+                            });
+                    builder.show();
+                }
+                break;
+            case 103:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d("MainMenuActivity", "external read permission granted");
+                } else {
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                            .setTitle(getString(R.string.permission_denied_dialog_title))
+                            .setMessage(getString(R.string.permission_denied_dialog_message_READ))
                             .setPositiveButton(getString(R.string.permission_denied_dialog_positive_button), null)
                             .setOnDismissListener(new DialogInterface.OnDismissListener() {
                                 @Override

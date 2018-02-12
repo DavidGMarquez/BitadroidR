@@ -48,11 +48,6 @@
             android:label="Multiple channel recording"
             android:configChanges="keyboardHidden|orientation|screenSize"/>
 
-        <service
-            android:name=".services.BitalinoDataService"
-            android:enabled="true"
-            android:exported="true" />
-
         <activity
             android:name=".SelectRecordingActivity"
             android:label="Recordings"

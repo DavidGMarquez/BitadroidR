@@ -17,6 +17,7 @@ import android.graphics.Rect;
 import android.location.Location;
 import android.os.Build;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
@@ -324,49 +325,50 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
     }
 
     class IncomingHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case BitalinoCommunicationService.MSG_SEND_FRAME:
-                    Bundle bf =msg.getData();
-                    BITalinoFrame frames=bf.getParcelable("Frame");
-                    appendData(frames);
-                    recordingStarted=true;
-                    break;
 
-                case BitalinoCommunicationService.MSG_SEND_CONNECTION_OFF:
-                    Toast.makeText(getApplicationContext(),"Device Disconnected",Toast.LENGTH_SHORT).show();
-                    isConnected=false;
-                    break;
-
-                case BitalinoCommunicationService.MSG_ERROR:
-                    switch(msg.arg1){
-                        case BitalinoCommunicationService.CODE_ERROR_TXT:
-                            Log.d(TAG,"TXT_ERROR");
+                @Override
+                public void handleMessage(Message msg) {
+                    switch (msg.what) {
+                        case BitalinoCommunicationService.MSG_SEND_FRAME:
+                            Bundle bf = msg.getData();
+                            BITalinoFrame frames = bf.getParcelable("Frame");
+                            appendData(frames);
+                            recordingStarted = true;
                             break;
-                        case BitalinoCommunicationService.CODE_ERROR_SAVING:
-                            Log.d(TAG,"SAVING_ERROR");
-                    }
-                    break;
 
-                case BitalinoCommunicationService.MSG_SEND_CONNECTION_ON:
-                    progressDialogConnecting.dismiss();
-                    if(!recordingStarted){
-                        alertDialogConnected.show();
-                    }
-                    isConnected=true;
-                    break;
+                        case BitalinoCommunicationService.MSG_SEND_CONNECTION_OFF:
+                            Toast.makeText(getApplicationContext(), "Device Disconnected", Toast.LENGTH_SHORT).show();
+                            isConnected = false;
+                            break;
 
-                case BitalinoCommunicationService.MSG_SEND_LOCATION:
-                    Bundle bl=msg.getData();
-                    Location location=bl.getParcelable("Location");
-                    locations.add(location);
-                    break;
-                default:
-                    super.handleMessage(msg);
-            }
+                        case BitalinoCommunicationService.MSG_ERROR:
+                            switch (msg.arg1) {
+                                case BitalinoCommunicationService.CODE_ERROR_TXT:
+                                    Log.d(TAG, "TXT_ERROR");
+                                    break;
+                                case BitalinoCommunicationService.CODE_ERROR_SAVING:
+                                    Log.d(TAG, "SAVING_ERROR");
+                            }
+                            break;
+
+                        case BitalinoCommunicationService.MSG_SEND_CONNECTION_ON:
+                            progressDialogConnecting.dismiss();
+                            if (!recordingStarted) {
+                                alertDialogConnected.show();
+                            }
+                            isConnected = true;
+                            break;
+
+                        case BitalinoCommunicationService.MSG_SEND_LOCATION:
+                            Bundle bl = msg.getData();
+                            Location location = bl.getParcelable("Location");
+                            locations.add(location);
+                            break;
+                        default:
+                            super.handleMessage(msg);
+                    }
+                }
         }
-    }
     private void appendData(BITalinoFrame frame) {// calculates x value of graphs
             timeCounter++;
         if (isVisible) {

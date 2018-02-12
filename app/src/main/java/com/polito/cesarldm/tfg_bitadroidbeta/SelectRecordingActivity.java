@@ -1,6 +1,5 @@
 package com.polito.cesarldm.tfg_bitadroidbeta;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -13,25 +12,16 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.Html;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.Toast;
 
-import com.polito.cesarldm.tfg_bitadroidbeta.adapters.RVConfigListAdapter;
 import com.polito.cesarldm.tfg_bitadroidbeta.adapters.RVRecordingListAdapter;
-import com.polito.cesarldm.tfg_bitadroidbeta.adapters.RecordingListAdapter;
-import com.polito.cesarldm.tfg_bitadroidbeta.vo.ChannelConfiguration;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.Constants;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class SelectRecordingActivity extends AppCompatActivity implements View.OnClickListener {
     private String path= Environment.getExternalStorageDirectory()+Constants.APP_DIRECTORY;

@@ -2,7 +2,6 @@ package com.polito.cesarldm.tfg_bitadroidbeta;
 
 import android.Manifest;
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -22,27 +21,19 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.provider.SyncStateContract;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
  import com.polito.cesarldm.tfg_bitadroidbeta.adapters.DeviceListAdapter;
 import com.polito.cesarldm.tfg_bitadroidbeta.services.BitalinoCommunicationService;
-import com.polito.cesarldm.tfg_bitadroidbeta.services.BitalinoDataService;
-
-import java.util.ArrayList;
-import java.util.Set;
 
 import info.plux.pluxapi.BTHDeviceScan;
-import info.plux.pluxapi.Constants;
 import info.plux.pluxapi.bitalino.BITalinoDescription;
-import info.plux.pluxapi.bitalino.BITalinoFrame;
 import info.plux.pluxapi.bitalino.BITalinoState;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;

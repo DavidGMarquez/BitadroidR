@@ -20,15 +20,17 @@ public class FrameTransferFunction {
 
     public FrameTransferFunction(ChannelConfiguration mChannelConfig){
         this.mChannelConfig=mChannelConfig;
-        if(mChannelConfig.getActiveChannels().length>4){
-            n=twoToTheNTwo;
-        }
-        else n=twoToTheNOne;
+
     }
 
     public float[] getConvertedValues(BITalinoFrame frame){
         float[] convertedValues=new float[6];
         for (int i = 0; i < mChannelConfig.activeChannels.length; i++){
+            if(i>4){
+                n=twoToTheNTwo;
+            }else{
+                n=twoToTheNOne;
+            }
             float f=(float)frame.getAnalog(mChannelConfig.activeChannels[i]);
             switch (mChannelConfig.activeChannelsNames[i]){
                 case "EMG":

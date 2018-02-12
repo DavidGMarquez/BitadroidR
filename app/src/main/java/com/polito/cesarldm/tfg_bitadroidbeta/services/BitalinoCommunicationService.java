@@ -62,12 +62,9 @@ public class BitalinoCommunicationService extends Service {
     public static final int MSG_SAVED=16;
     public static final int MSG_SEND_LOCATION=17;
     public static final int MSG_SEND_BPM_RR=18;
-
-
     private boolean isConnected=false;
     private boolean isRecording=false;
     private boolean isRecordMade=false;
-    private boolean killServiceError=false;
     private Messenger mMessenger=new Messenger(new IncomingHandler());
     private Messenger mClient;
     private BITalinoCommunication bitaCom;
@@ -76,14 +73,9 @@ public class BitalinoCommunicationService extends Service {
     private BluetoothDevice device;
     private BITalinoDescription bitaDesc;
     private BITalinoState bitaState;
-    private Notification serviceNotification=null;
     private PowerManager.WakeLock wakeLock=null;
-    ArrayList<Entry> rrValues=new ArrayList<Entry>();
-    ArrayList<Entry> bpmValues=new ArrayList<Entry>();
     NotificationManager nManager;
-    private int freqMsg;
     private int frameCount=0;
-    private int msgCount=0;
     private ArrayList<BITalinoFrame> framePack=new ArrayList<BITalinoFrame>();
 
     public static final int CODE_ERROR_SAVING=8;
@@ -136,8 +128,8 @@ public class BitalinoCommunicationService extends Service {
         }catch (NullPointerException e){
 
         }
-            if(isRecordMade) {
-                new Thread() {
+        if(isRecordMade) {
+            new Thread() {
                     @Override
                     public void run() {
                         boolean errorSavingRecording = false;
@@ -151,12 +143,12 @@ public class BitalinoCommunicationService extends Service {
                 }.start();
             }
                 //---------------------------------------------------------------------
-                if (isRecording) {
-                    stopRecording();
-                }
-                if (isConnected) {
-                    stopConnection();
-                }
+        if (isRecording) {
+            stopRecording();
+        }
+        if (isConnected) {
+            stopConnection();
+        }
         wakeLock.release();
     }
 
@@ -232,7 +224,6 @@ class IncomingHandler extends Handler {
                 temprr=msg.getData().getFloat("rr");
                 if (!dataManager.writeBPMToTmpFile(temprr,tempbpm)) {
                     sendErrorToActivity(CODE_ERROR_TXT);
-                    killServiceError = true;
                     stopSelf();
                 }else {
                    Log.d(TAG,"BPMRR info sent to DATA MANAGER");
@@ -274,11 +265,6 @@ class IncomingHandler extends Handler {
     }
 
     private void startRecording() {
-        if(mConfiguration.getVisualizationRate()>=100){
-            freqMsg=10;
-        }else{
-            freqMsg=1;
-        }
         dataManager=new DataManager(getApplicationContext(),mConfiguration.getName(),mConfiguration,device);
         createNotification();
         try {
@@ -358,7 +344,6 @@ class IncomingHandler extends Handler {
         } catch (RemoteException e) {
             e.printStackTrace();
         }
-
     }
     private void sendFrame(BITalinoFrame frame) {
 
@@ -369,7 +354,6 @@ class IncomingHandler extends Handler {
         try {
             mClient.send(message);
             framePack.clear();
-            msgCount=0;
         } catch (NullPointerException e) {
             e.printStackTrace();
         } catch (RemoteException e) {
@@ -427,7 +411,6 @@ class IncomingHandler extends Handler {
                 Location location=intent.getParcelableExtra("Location");
                 if (!dataManager.writeLocationToTmpFile(location)) {
                     sendErrorToActivity(CODE_ERROR_TXT);
-                    killServiceError = true;
                     stopSelf();
                 }else {
                     sendLocation(location);
@@ -490,7 +473,6 @@ class IncomingHandler extends Handler {
     private void processFrame(BITalinoFrame biTalinoFrame){
             if (!dataManager.writeFrameToTmpFile(biTalinoFrame, biTalinoFrame.getSequence())) {
                 sendErrorToActivity(CODE_ERROR_TXT);
-                killServiceError = true;
                 stopSelf();
             }else {
                 frameCount++;
@@ -519,7 +501,6 @@ class IncomingHandler extends Handler {
             mClient.send(message);
         } catch (RemoteException e) {
             Log.e(TAG, "client is dead. Service is being stopped", e);
-            killServiceError = true;
             stopSelf();
         }
     }
@@ -540,8 +521,6 @@ class IncomingHandler extends Handler {
                 newRecordingIntent, PendingIntent.FLAG_CANCEL_CURRENT);
         mBuilder.setContentIntent(pendingIntent);
 
-        // CREATES THE NOTIFICATION AND START SERVICE AS FOREGROUND
-        serviceNotification = mBuilder.build();
     }
 
 }

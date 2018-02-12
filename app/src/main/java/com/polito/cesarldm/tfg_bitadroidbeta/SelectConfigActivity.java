@@ -1,6 +1,5 @@
 package com.polito.cesarldm.tfg_bitadroidbeta;
 
-import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -16,13 +15,9 @@ import android.text.Html;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.polito.cesarldm.tfg_bitadroidbeta.adapters.ConfigListAdapter;
 import com.polito.cesarldm.tfg_bitadroidbeta.adapters.RVConfigListAdapter;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.ChannelConfiguration;
 import com.polito.cesarldm.tfg_bitadroidbeta.vo.JsonManager;
@@ -42,7 +37,6 @@ public class SelectConfigActivity extends AppCompatActivity implements View.OnCl
     RVConfigListAdapter rvAdapter;
     LinearLayoutManager mLinearLM;
     JsonManager jsonManager;
-    ConfigListAdapter adapter;
     BluetoothDevice device;
     List<ChannelConfiguration> returnedList;
     ArrayList<ChannelConfiguration> channelConfList = new ArrayList<ChannelConfiguration>();

@@ -29,6 +29,8 @@ import com.polito.cesarldm.tfg_bitadroidbeta.ShowDataActivity;
 
 import java.util.List;
 
+import static com.polito.cesarldm.tfg_bitadroidbeta.R.color.cardview_light_background;
+
 /**
  * Created by Cesar on 09/11/2017.
  */
@@ -47,7 +49,7 @@ public class Linechart implements OnChartGestureListener, View.OnClickListener,O
     private int xRange;
     float f;
     private int zoomValue=5;
-    boolean zoomFinished=false;
+    private boolean zoomFinished=false;
     float xscale;
     public Entry selectedentry;
     private float chartScale;
@@ -75,6 +77,7 @@ public class Linechart implements OnChartGestureListener, View.OnClickListener,O
         this.chart=new LineChart(context);
         this.legendName=name;
         setChartCharacteristics();
+        chart.setBackgroundResource(R.color.cardview_light_background);
 
 
     }

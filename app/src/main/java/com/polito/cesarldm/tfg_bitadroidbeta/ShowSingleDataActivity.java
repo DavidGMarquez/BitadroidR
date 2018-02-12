@@ -114,7 +114,7 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
             startService(intent);
             alertDialogInitiate();
             progressDialogConnecting=new ProgressDialog(ShowSingleDataActivity.this);
-            progressDialogConnecting.setMessage("Connecting to Bitalino");
+            progressDialogConnecting.setMessage(getText(R.string.Connecting_progress));
             frameTransFunc=new FrameTransferFunction(mConfiguration);
             mNotifierBuilder=new RecordingNotificationBuilder(this,2,getClass());
 
@@ -235,8 +235,13 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
         if(mBound) {
             unbindService(mConnection);
         }
-        linechart.cleanPool();
-        linechart.deleteChart();
+        try {
+            linechart.cleanPool();
+            linechart.deleteChart();
+
+        }catch (NullPointerException e){
+            Log.d(TAG, "onDestroy: "+e.toString());
+        }
         Intent intent = new Intent(this, BitalinoCommunicationService.class);
         stopService(intent);
 
@@ -437,10 +442,10 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
         yMax=round(linechart.getYMax(),2);
         yMin=round(linechart.getYMin(),2);
         avg=round(sumForAvg/size,2);
-        tvMax.setText("Max: "+yMax);
-        tvMin.setText("Min: "+yMin);
-        tvAvg.setText("Avg: "+avg);
-        float y=linechart.getSelectedValue().getY();
+        tvMax.setText(getString(R.string.max)+yMax);
+        tvMin.setText(getString(R.string.min)+yMin);
+        tvAvg.setText(getString(R.string.avg)+avg);
+        float y=round(linechart.getSelectedValue().getY(),2);
         tvSel.setText("Y: "+String.valueOf(y));
     }
     private static float round(float d, int decimalPlace) {

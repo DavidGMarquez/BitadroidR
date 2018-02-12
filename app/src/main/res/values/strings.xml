@@ -2,15 +2,31 @@
     <string name="app_name">TFG_BitadroidBeta</string>
     <!-- permission check dialog -->
     <string name="permission_check_dialog_title">This app needs location access</string>
+    <string name="permission_check_dialog_title_READ">This app needs acces to your file system access</string>
     <string name="permission_check_dialog_message">Please grant location access so this app can detect PLUX\'s Bluetooth devices</string>
+    <string name="permission_check_dialog_message_READ">Please grant access to the file system so this app can save biometrical data</string>
     <string name="permission_check_dialog_positive_button">OK</string>
 
     <!-- permission denied dialog -->
     <string name="permission_denied_dialog_title">Functionality limited</string>
     <string name="permission_denied_dialog_message">Since location access has no been granted, this app will not be able to discover bluetooth devices.</string>
+    <string name="permission_denied_dialog_message_READ">Since access to the file system has no been granted, this app will not be able to save data.</string>
     <string name="permission_denied_dialog_positive_button">OK</string>
 
     <string name="divider_image_content">divider</string>
+
+    <!--Useful labels-->
+    <string name="max">Max: </string>
+    <string name="min">Min: </string>
+    <string name="avg">Avg: </string>
+    <string name="selected">Y: </string>
+
+    <!--Progress Dialog-->
+    <string name="Connecting_progress">Connecting to Bitalino</string>
+
+    <!--Alert Dialog-->
+    <string name="Alert_dialogtext"><font color='#F44E42'>Warning</font></string>
+
 
     <!-- ACTIVITIES LABELS -->
     <string name="home_label">Bitadroid</string>

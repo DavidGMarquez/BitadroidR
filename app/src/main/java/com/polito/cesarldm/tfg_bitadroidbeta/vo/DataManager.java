@@ -41,7 +41,7 @@ import info.plux.pluxapi.bitalino.BITalinoFrame;
 
 /**
  * Saves and compresses recording data into android' external file system
- * @author Carlos Marten
+ * @author Carlos Marten, modified partly by César López de Mata, September-2017
  *
  */
 public class DataManager {
@@ -109,6 +109,7 @@ public class DataManager {
 		}
 		bufferedWriter = new BufferedWriter(outStreamWriter);
 	}
+	// New method added by César López de Mata. Same functionality as previous "initializeFrameFile()"
 	private void initializeBPMRRFile(){
 		try {
 			outStreamWriterBPMRR = new OutputStreamWriter(context.openFileOutput(Constants.TEMP_BPMRR_FILE, Context.MODE_PRIVATE));
@@ -117,7 +118,7 @@ public class DataManager {
 		}
 		bufferedWriterBPMRR = new BufferedWriter(outStreamWriterBPMRR);
 	}
-//context.openFileOutput(Constants.TEMP_LOC_FILE, Context.MODE_PRIVATE)
+    // New method added by César López de Mata. Same functionality as previous "initializeFrameFile()"
 	private void initializeLocationFile(){
 		try {
 			outStreamWriterLocation = new OutputStreamWriter(context.openFileOutput(Constants.TEMP_LOC_FILE, Context.MODE_PRIVATE));
@@ -152,7 +153,7 @@ public class DataManager {
 		}
 		return true;
 	}
-
+   // New method added by César López de Mata. Same functionality as previous "writeFrameToTmpFile()"
 	private final StringBuilder sbloc = new StringBuilder(400);
 	public boolean writeLocationToTmpFile(Location location) {
 		float distance;
@@ -177,6 +178,7 @@ public class DataManager {
 		lastLocation=location;
 		return true;
 	}
+    // New method added by César López de Mata. Same functionality as previous "writeFrameToTmpFile()"
     private final StringBuilder sbbpm = new StringBuilder(400);
     public boolean writeBPMToTmpFile(float temprr,float tempbpm) {
         if(!pulseMetricsON) {
@@ -197,11 +199,7 @@ public class DataManager {
     }
 
 	/**
-	 * New header makes to work with BioSignals
-	 * Creates and appends the header on the recording session file
-	 * 
-	 * Returns true if the text file was written successfully or false if an
-	 * exception was caught
+	 * New appendHeader(), adapted to work with OpenSignals (r)evolution
 	 */
     private boolean appendHeader() {
 
@@ -305,6 +303,7 @@ public class DataManager {
         }
         return true;
     }
+    //New method created to set the headers in the location data files
     private boolean appendHeaderLoc() {
         DateFormat dateFormat = DateFormat.getDateTimeInstance();
         String tmpFilePath = context.getFilesDir() + "/" + Constants.TEMP_LOC_FILE;
@@ -382,6 +381,7 @@ public class DataManager {
         }
         return true;
     }
+    //New method created to set the headers in the BPMRR data files
     private boolean appendHeaderBPMRR() {
         DateFormat dateFormat = DateFormat.getDateTimeInstance();
         String tmpFilePath = context.getFilesDir() + "/" + Constants.TEMP_BPMRR_FILE;
@@ -459,7 +459,7 @@ public class DataManager {
         }
         return true;
     }
-
+    //New method based on the old one by Carlos Marten, compresses all 3 files
     private Boolean compressFileNew(){
 		DateFormat dateFormat = DateFormat.getDateTimeInstance();
 		Date date = new Date();
@@ -530,7 +530,7 @@ public class DataManager {
 
 
     /**
-	 * Returns true if compressed successfully and false otherwise.
+	 * Returns true if compressed successfully and false otherwise. NOT USED
 	 */
 	private boolean compressFile(){
 		
@@ -636,7 +636,7 @@ public class DataManager {
 	
 	/**
 	 * Returns true if writers were closed properly. False if an exception was
-	 * caught closing them
+	 * caught closing them Modified
 	 */
 	public boolean closeWriters(){
 		try {
@@ -660,7 +660,7 @@ public class DataManager {
 	
 	/**
 	 * Saves and compress a recording. Returns true if the writing and the
-	 * compression were successful or false if either one of them failed
+	 * compression were successful or false if either one of them failed MODIFIED
 	 */
 	public boolean saveAndCompressFile(Messenger client) {
 		this.client = client;
