@@ -108,10 +108,8 @@ public class SelectRecordingActivity extends AppCompatActivity implements View.O
             return true;
         }
     }
-
     @Override
     public void onClick(View v) {
-
     }
 
     private interface ClickListener{
@@ -176,7 +174,7 @@ public class SelectRecordingActivity extends AppCompatActivity implements View.O
                 builder.setMessage(Html.fromHtml("<font color='#F44E42'>Are you sure to delete?</font>"));    //set message
                 builder.setIcon(R.drawable.ic_fail);
 
-                builder.setPositiveButton(Html.fromHtml("<font color='#F44E42'>REMOVE</font>"), new DialogInterface.OnClickListener() { //when click on DELETE
+                builder.setPositiveButton(Html.fromHtml("<font color='#F44E42'>DELETE</font>"), new DialogInterface.OnClickListener() { //when click on DELETE
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                        if(rvAdapter.getSelectedCC(position).delete()){

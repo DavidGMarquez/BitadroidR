@@ -301,7 +301,7 @@ public class SelectConfigActivity extends AppCompatActivity implements View.OnCl
                 AlertDialog.Builder builder = new AlertDialog.Builder(SelectConfigActivity.this); //alert for confirm to delete
                 builder.setMessage(Html.fromHtml("<font color='#F44E42'>Are you sure to delete?</font>"));    //set message
                 builder.setIcon(R.drawable.ic_fail);
-                builder.setNegativeButton(Html.fromHtml("<font color='#F44E42'>REMOVE</font>"), new DialogInterface.OnClickListener() { //when click on DELETE
+                builder.setPositiveButton(Html.fromHtml("<font color='#F44E42'>DELETE</font>"), new DialogInterface.OnClickListener() { //when click on DELETE
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         jsonManager.deleteConfiguration(position);
