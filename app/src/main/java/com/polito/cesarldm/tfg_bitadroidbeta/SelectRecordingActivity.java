@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -64,7 +65,9 @@ public class SelectRecordingActivity extends AppCompatActivity implements View.O
                     emailIntent.putExtra(Intent.EXTRA_SUBJECT, "My BITalino Recording");
                     emailIntent.putExtra(Intent.EXTRA_TEXT, "You can send your files, and display them using OpenSignals!" +"\n"+
                             " Enjoy");
-                    Uri uri = Uri.fromFile(sendFile);
+                    //Uri uri = Uri.fromFile(sendFile);
+                    Uri uri= FileProvider.getUriForFile(getApplicationContext(), "com.example.fileprovider", sendFile);
+                    //Uri uri= FileProvider.getUriForFile(getApplicationContext(), getPackageName()+".fileprovider", sendFile);
                     emailIntent.putExtra(Intent.EXTRA_STREAM, uri);
                     startActivity(Intent.createChooser(emailIntent, "Pick an Email provider"));
 
