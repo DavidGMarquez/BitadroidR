@@ -77,8 +77,8 @@ public class MainMenuActivity extends AppCompatActivity  implements View.OnClick
         int id = item.getItemId();
 
         if (id == R.id.mybutton) {
-
-            // do something here
+            Intent infoIntent=new Intent (this, InfoActivity.class);
+            startActivity(infoIntent);
         }
         return super.onOptionsItemSelected(item);
     }

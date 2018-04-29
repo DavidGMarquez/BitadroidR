@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">TFG_BitadroidBeta</string>
+    <string name="Information">
+        This app was developed based on Bitadroid app, as a Telecommunications degree\'s final assignment in Universidad San Pablo CEU.\n\nMain Developer:\nCesar Lopez de Mata Crespo\nhttps://www.linkedin.com/in/cesarldmc-64a26751/\n\nProject manager:\nDavid Gonzalez Marquez\nhttps://www.linkedin.com/in/davgonmar/\n </string>
+    <string name="Disclaimer">The biofeedback information provided by BitadroidR mobile app, is for general information purposes only. The developer team assumes no responsibility for errors or omissions in the contents on the Service. In no event shall be liable for any special, direct, indirect, consequential, or incidental damages or any damages whatsoever, whether in an action of contract, negligence or other tort, arising out of or in connection with the use of the mobile app or the contents of the recordings.\nThe team reserves the right to make additions, deletions, or modification to the contents on the mobile app at any time without prior notice.\nDoes not warrant that the app is free of viruses or other harmful components.</string>
     <!-- permission check dialog -->
     <string name="permission_check_dialog_title">This app needs location access</string>
     <string name="permission_check_dialog_title_READ">This app needs acces to your file system access</string>

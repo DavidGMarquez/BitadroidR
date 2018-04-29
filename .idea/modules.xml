@@ -2,8 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/TFG_BitadroidBeta.iml" filepath="$PROJECT_DIR$/TFG_BitadroidBeta.iml" />
       <module fileurl="file://C:\Users\Sir_D\AndroidStudioProjects\TFG_BitadroidBeta_New\TFG_BitadroidBeta.iml" filepath="C:\Users\Sir_D\AndroidStudioProjects\TFG_BitadroidBeta_New\TFG_BitadroidBeta.iml" />
-      <module fileurl="file://$PROJECT_DIR$/TFG_BitadroidBeta_New.iml" filepath="$PROJECT_DIR$/TFG_BitadroidBeta_New.iml" />
+      <module fileurl="file://C:\Users\Cesar\.AndroidStudio3.0\TFG_BitadroidBeta\TFG_BitadroidBeta\TFG_BitadroidBeta_New.iml" filepath="C:\Users\Cesar\.AndroidStudio3.0\TFG_BitadroidBeta\TFG_BitadroidBeta\TFG_BitadroidBeta_New.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

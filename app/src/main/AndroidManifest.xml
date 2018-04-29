@@ -16,10 +16,10 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:largeHeap="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
-        android:largeHeap="true">
+        android:theme="@style/AppTheme">
         <activity
             android:name=".MainMenuActivity"
             android:label="Bitadroid"
@@ -33,7 +33,7 @@
         <activity
             android:name=".SelectDevicesActivity"
             android:label="Bluetooth search"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".SelectConfigActivity"
             android:label="Bitalino configurations"
@@ -41,22 +41,21 @@
         <activity
             android:name=".CreateConfigActivity"
             android:label="New configuration"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ShowDataActivity"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="Multiple channel recording"
-            android:configChanges="keyboardHidden|orientation|screenSize"/>
-
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".SelectRecordingActivity"
             android:label="Recordings"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ShowSingleDataActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="Single channel recording"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:configChanges="keyboardHidden|orientation|screenSize"/>
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <service
             android:name=".services.BitalinoCommunicationService"
@@ -65,9 +64,9 @@
 
         <activity
             android:name=".HeartMonitorActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="Heart Rate Monitor"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:configChanges="keyboardHidden|orientation|screenSize"/>
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <service
             android:name=".services.GPSService"
@@ -92,7 +91,12 @@
         <activity
             android:name=".CtreateHMConfigActivity"
             android:label="HM Config"
-            android:theme="@style/AppTheme.PopupCustomTheme"/>
+            android:theme="@style/AppTheme.PopupCustomTheme" />
+        <activity
+            android:name=".InfoActivity"
+            android:label="About"
+            />
+
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.example.fileprovider"
@@ -102,6 +106,10 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+
+
+
     </application>
 
 </manifest>
