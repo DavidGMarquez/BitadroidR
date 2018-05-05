@@ -355,7 +355,7 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
                     recordingStarted=true;
                     break;
                 case BitalinoCommunicationService.MSG_SEND_CONNECTION_OFF:
-                    Toast.makeText(getApplicationContext(),"Device Disconnected",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(),"Connection ended",Toast.LENGTH_SHORT).show();
                     break;
                 case BitalinoCommunicationService.MSG_ERROR:
                     switch(msg.arg1){
@@ -368,6 +368,7 @@ public class HeartMonitorActivity extends AppCompatActivity implements View.OnCl
                     break;
                 case BitalinoCommunicationService.MSG_SEND_CONNECTION_ON:
                     progressDialogConnecting.dismiss();
+                    Toast.makeText(getApplicationContext(),"Connection ended",Toast.LENGTH_SHORT).show();
                     if(!recordingStarted){
                         alertDialogConnected.show();
                     }

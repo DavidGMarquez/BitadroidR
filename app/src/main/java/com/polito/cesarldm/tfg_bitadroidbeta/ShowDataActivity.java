@@ -272,7 +272,7 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
                 mNotifierBuilder.launchNotification();
                 break;
             case R.id.btn_SDA_stop:
-                Toast.makeText(this,"F: "+graphs.get(0).getEntryCount(),Toast.LENGTH_LONG).show();
+               // Toast.makeText(this,"F: "+graphs.get(0).getEntryCount(),Toast.LENGTH_LONG).show();
                 stopRecording();
                 Intent gpsIntentEnd=new Intent(this,GPSService.class);
                 stopService(gpsIntentEnd);
@@ -337,7 +337,7 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
                             break;
 
                         case BitalinoCommunicationService.MSG_SEND_CONNECTION_OFF:
-                            Toast.makeText(getApplicationContext(), "Device Disconnected", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "Connection ended", Toast.LENGTH_SHORT).show();
                             isConnected = false;
                             break;
 
@@ -352,6 +352,7 @@ public class ShowDataActivity extends AppCompatActivity  implements View.OnClick
                             break;
 
                         case BitalinoCommunicationService.MSG_SEND_CONNECTION_ON:
+                            Toast.makeText(getApplicationContext(),"Connection ended",Toast.LENGTH_SHORT).show();
                             progressDialogConnecting.dismiss();
                             if (!recordingStarted) {
                                 alertDialogConnected.show();

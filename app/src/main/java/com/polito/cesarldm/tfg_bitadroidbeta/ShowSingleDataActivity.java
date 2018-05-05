@@ -384,7 +384,7 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
                     recordingStarted=true;
                     break;
                 case BitalinoCommunicationService.MSG_SEND_CONNECTION_OFF:
-                    Toast.makeText(getApplicationContext(),"Device Disconnected",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(),"Connection Ended",Toast.LENGTH_SHORT).show();
                     isConnected=false;
                     break;
                 case BitalinoCommunicationService.MSG_ERROR:
@@ -398,6 +398,7 @@ public class ShowSingleDataActivity extends AppCompatActivity implements View.On
                     break;
                 case BitalinoCommunicationService.MSG_SEND_CONNECTION_ON:
                     progressDialogConnecting.dismiss();
+                    Toast.makeText(getApplicationContext(),"Connection ended",Toast.LENGTH_SHORT).show();
                     if(!recordingStarted){
                         alertDialogConnected.show();
                     }
